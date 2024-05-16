@@ -4,13 +4,15 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
-    </div>
+    <nav class="flex justify-between h-16 bg-slate-50">
+      <RouterLink to="/movies">LOGO</RouterLink>
+      <div class="flex gap-4">
+        <RouterLink to="/signup">SignUp</RouterLink>
+        <RouterLink to="/signin">SignIn</RouterLink>
+        <RouterLink to="/mypage">Mypage</RouterLink>
+      </div>
+    </nav>
   </header>
-
   <RouterView />
 </template>
 
