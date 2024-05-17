@@ -1,6 +1,9 @@
-<script setup></script>
 <template>
-  <div>
-    <h1 class="text-lg">Home</h1>
-  </div>
+  <GoogleMap />
+  <MovieList />
 </template>
+
+<script setup>
+import GoogleMap from '@/components/GoogleMap.vue'
+import MovieList from '@/components/home/MovieList.vue'
+</script>
