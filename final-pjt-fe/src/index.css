@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .input {
+    @apply h-14 px-4 pt-1 w-full rounded-lg border border-slate-300 focus:outline-primary-500;
+  }
+  .input-label {
+    @apply absolute text-slate-600 top-4 left-3 px-2 transition peer-focus:-top-2 peer-focus:bg-white peer-focus:text-primary-500 peer-focus:text-sm peer-focus:transition-all;
+  }
+  .peer:not(:placeholder-shown) + .input-label {
+    @apply -top-2 bg-white text-sm;
+  }
+  .input:not(:placeholder-shown) + .input-label {
+    @apply -top-2 bg-white text-sm;
+  }
+  .submit-btn {
+    @apply h-12 mt-4 bg-primary-500 text-white rounded-full hover:bg-blue-500 transition-colors;
+  }
+}
