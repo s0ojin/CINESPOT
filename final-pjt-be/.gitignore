@@ -485,6 +485,9 @@ docs/_book
 # TODO: where does this rule come from?
 test/
 
+# Ignore vue_project directory
+vue_project/
+
 ### Vuejs ###
 # Recommended template: Node.gitignore
 
