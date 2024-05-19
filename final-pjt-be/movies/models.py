@@ -19,7 +19,7 @@ class Movie(models.Model):
         return self.title
 
 class Review(models.Model): ## 우리의 게시글 커뮤니티
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE) # 게시글에 해당하는 영화 정보
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='review_set') # 게시글에 해당하는 영화 정보
     user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
@@ -27,5 +27,5 @@ class Review(models.Model): ## 우리의 게시글 커뮤니티
     updated_at = models.DateTimeField(auto_now=True)    # 수정일
     # 좋아요 필드는 어카지
     
-    # def __str__(self):
-    #     return self.title
+    def __str__(self):
+        return self.title
