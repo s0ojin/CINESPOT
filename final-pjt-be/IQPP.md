@@ -27,8 +27,20 @@
 * reference
 ![alt text](image-1.png)
 
+#### 현재까지 생성한 유저
+1. harry/admin1234!
+2. Ssafy/ssafy1234!
+
 # TMBD API 연결
 #### API key:`7664b301eaabecbd10687d87a3fcdbf2`
 #### API Token: `eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3NjY0YjMwMWVhYWJlY2JkMTA2ODdkODdhM2ZjZGJmMiIsInN1YiI6IjY2NDhhMjZhMGQ2Y2Q2ZjUwZjJmNzA1ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SKALMlciV5bzicwPKpzwwUGyNBw8loqyFDn5cmFpTGE`
 
+## 영화 데이터 받아와서 .json에 저장하기
+1. fetch_and_save_movie_data.py 파일이 있는 경로로 이동
+2. `python fetch_and_save_movie_data.py` 커맨드 입력
+3. 끝!
+* 받아오고자 하는 Model이 변경될 때마다 아래 과정 필수
+    1. python manage.py makemigratons
+    2. python manage.py migrate
+ 
 ### TMDB에서 영화 촬영지 정보 받아오려면 credit_id 필요?
