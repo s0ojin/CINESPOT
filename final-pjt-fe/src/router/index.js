@@ -21,12 +21,14 @@ const router = createRouter({
     {
       path: '/signup',
       name: 'signup',
-      component: SignUpView
+      component: SignUpView,
+      meta: { noContainer: true }
     },
     {
       path: '/signin',
       name: 'signin',
-      component: SignInView
+      component: SignInView,
+      meta: { noContainer: true }
     },
     {
       path: '/mypage',
