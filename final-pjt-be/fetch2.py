@@ -13,13 +13,20 @@ from movies.models import Movie
 
 def fetch_movie_data(movie_id):
     api_key = settings.TMDB_API_KEY  # 실제 API 키로 변경하세요
-    url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
+    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}'
+    images_url = f'https://api.themoviedb.org/3/movie/{movie_id}/images?api_key={api_key}'
 
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
+    movie_response = requests.get(movie_url)
+    images_response = requests.get(images_url)
+    
+    if movie_response.status_code == 200 and images_response.status_code == 200:
+        movie_data = movie_response.json()
+        images_data = images_response.json()
+        still_cut_paths = [img['file_path'] for img in images_data.get('backdrops', [])]
+        movie_data['still_cut_paths'] = still_cut_paths
+        return movie_data
     else:
-        print(f'Failed to fetch movie data for movie ID {movie_id}:', response.status_code)
+        print(f'Failed to fetch movie data for movie ID {movie_id}:', movie_response.status_code, images_response.status_code)
         return None
 
 def save_movie_data_to_db(movie_data):
@@ -36,7 +43,8 @@ def save_movie_data_to_db(movie_data):
             'backdrop_path': movie_data.get('backdrop_path', ''),
             'original_language': movie_data.get('original_language', ''),
             'genre_ids': movie_data.get('genre_ids', []),
-            'raw_data': movie_data  # 모든 데이터를 저장
+            'raw_data': movie_data,  # 모든 데이터를 저장
+            'still_cut_paths': movie_data.get('still_cut_paths', [])  # 스틸컷 URL 저장
         }
     )
     return movie
@@ -61,7 +69,7 @@ if __name__ == "__main__":
     movies_data = []
     movie_id = 1
 
-    while len(movies_data) < 10:
+    while len(movies_data) < 100:
         movie_data = fetch_movie_data(movie_id)
         if movie_data:
             movie = save_movie_data_to_db(movie_data)
