@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Movie, Review
-from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
+from .models import Movie, Review, Review_likes_users
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MovieSerialzer, MovieDetailSerializer, ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
@@ -69,3 +70,36 @@ def create_review(request, movie_pk):
     if serializer.is_valid(raise_exception=True):
         serializer.save(movie=movie)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+# 영화 좋아요
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def movie_like_users(request, movie_pk):
+    movie = get_object_or_404(Movie, pk=movie_pk)
+
+    if request.user in movie.liked_movies.all():
+        movie.liked_movies.remove(request.user)
+        liked = False
+    else:
+        movie.liked_movies.add(request.user)
+        liked = True
+        
+    return Response({'liked':liked}, status=status.HTTP_200_OK)
+
+# 리뷰 좋아요 뷰
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_like_users(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+    user = request.user
+
+    # Review_likes_users 모델을 사용하여 좋아요 추가/삭제
+    review_like, created = Review_likes_users.objects.get_or_create(review=review, user=user)
+
+    if not created:
+        review_like.delete()
+        liked = False
+    else:
+        liked = True
+
+    return Response({'liked': liked, 'like_count': review.likes.count()}, status=status.HTTP_200_OK)
