@@ -23,3 +23,11 @@ export const getMovieDetails = (movieId) => {
     }
   })
 }
+
+export const getSimilarMovies = (movieId) => {
+  return movieApi.get(`https://api.themoviedb.org/3/movie/${movieId}/similar`, {
+    params: {
+      language: 'ko-KR'
+    }
+  })
+}
