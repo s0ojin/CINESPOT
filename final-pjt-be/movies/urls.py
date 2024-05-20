@@ -8,7 +8,10 @@ urlpatterns = [
    path('reviews/', views.review_list),
    path('reviews/<int:review_pk>/', views.review_detail),
    path('movies/<int:movie_pk>/reviews/', views.create_review),
-   # review_list test url
-   # path('movies/<int:movie_pk>/review-list/', views.movie_review_list),
+   # 영화 좋아요 기능 확인 임시 경로
+   path('movies/<int:movie_pk>/like/', views.movie_like_users),
+   # 리뷰 좋아요 기능 확인 임시 경로
+   path('reviews/<int:review_pk>/like/', views.review_like_users),
+
 ]
 

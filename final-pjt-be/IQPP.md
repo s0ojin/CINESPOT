@@ -28,8 +28,9 @@
 ![alt text](image-1.png)
 
 #### 현재까지 생성한 유저
-1. harry/admin1234!
-2. Ssafy/ssafy1234!
+1. harry/admin1234! [Token 913c723846d4913aebd01734a0cdfbf3cd431348]
+2. Ssafy/ssafy1234! []
+3. kj/admin1234!    [Token f47ba8506845d5e395dd45f783e2d45b76160f0a]
 
 # TMBD API 연결
 #### API key:`7664b301eaabecbd10687d87a3fcdbf2`

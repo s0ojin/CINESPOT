@@ -19,34 +19,38 @@ class MovieContentSerializer(serializers.ModelSerializer):
 class MovieSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ('title', 'overview')
+        fields = ('title', 'overview', 'liked_movies')
+        # fields = '__all__'
+
 
 class ReviewListSerializer(serializers.ModelSerializer):
     # user = UserSerializer(read_only=True)  # 사용자 이름을 직렬화하기 위해 UserSerializer 사용
     user = serializers.SerializerMethodField()
+    # 05.20,16:25, review_set 좋아요 기능 추가
+    like_count = serializers.SerializerMethodField()
     class Meta:
         model = Review
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user']
+        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count']
 
     def get_user(self, obj):
         return obj.user.username
+    
+    # 0520 1548 추가
+    def get_like_count(self, obj):
+        return obj.likes.count()
+    
 
 
 # 단일 영화 정보 제공
 class MovieDetailSerializer(serializers.ModelSerializer):
-    # class ActorNameSerializer(serializers.ModelSerializer):
-        # class Meta:
-        #     model = Actor
-        #     fields = ('name',)
     # 리뷰 목록만 조회해 볼게여 일단 ㅋㅋ
-    # actors = ActorNameSerializer(Movie.actors, many=True, read_only=True)
-    
     review_set = ReviewListSerializer(read_only=True, many=True) #원본
 
     class Meta:
         model = Movie
-        fields = ('title','review_set') 
         # Movie Detail 페이지에 영화 title과 review 목록만 노출하겠단 의미
+        # fields = ('title','review_set') 
+        fields = '__all__' 
 
 
 class ReviewDetailSerializer(serializers.ModelSerializer):
@@ -54,13 +58,20 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     # movie = MovieContentSerializer(Review.movie, read_only=True) #원본
     user = serializers.SerializerMethodField() # "user" : 'harry' ver.
     movie = MovieContentSerializer(read_only=True)
-    
+    # 0520 1548 추가
+    like_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Review
         fields = '__all__'
     
     def get_user(self, obj):
         return obj.user.username
+    
+    # 0520 1548 추가
+    def get_like_count(self, obj):
+        return obj.likes.count()
+    
 
 class ReviewGenSerializer(serializers.ModelSerializer):
     # user: <int> -> user: <username>으로 보기위해 아래 코드 추가
