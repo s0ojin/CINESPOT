@@ -16,7 +16,8 @@ const router = createRouter({
     {
       path: '/movies/:movieId',
       name: 'movieDetail',
-      component: MovieDetailView
+      component: MovieDetailView,
+      meta: { noContainer: true }
     },
     {
       path: '/signup',
