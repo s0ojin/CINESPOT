@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2" @click="goToDetail">
     <div
       class="relative h-[360px] rounded-lg border overflow-hidden cursor-pointer hover:scale-105 transition duration-300"
     >
@@ -25,6 +25,7 @@
 
 <script setup>
 import { defineProps } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   movie: {
@@ -36,4 +37,9 @@ const props = defineProps({
     required: true
   }
 })
+
+const router = useRouter()
+const goToDetail = () => {
+  router.push({ name: 'movieDetail', params: { movieId: props.movie.id } })
+}
 </script>
