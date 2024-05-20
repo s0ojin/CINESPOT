@@ -31,17 +31,15 @@
 
 <script setup>
 import Carousel from '@/components/Carousel.vue'
-
-import { ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getPopularMovies } from '@/apis/movieApi'
 
-const { data, error, isLoading } = useQuery({ queryKey: ['popularMovies'], queryFn: getPopularMovies })
-const popularMovies = ref([])
-
-watch(data, (newValue) => {
-  if (newValue) {
-    popularMovies.value = newValue.data.results
-  }
+const {
+  data: popularMovies,
+  error,
+  isLoading
+} = useQuery({
+  queryKey: ['popularMovies'],
+  queryFn: () => getPopularMovies().then((res) => res.data.results)
 })
 </script>
