@@ -11,16 +11,27 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
-class MovieContentSerializer(serializers.ModelSerializer):
+class MovieContentSerializer(serializers.ModelSerializer): # 이거 좀 무쓸모 같은데,,
     class Meta:
         model = Movie
         fields = ('title',)
 
-class MovieSerialzer(serializers.ModelSerializer):
+# 영화 리스트 조회 페이지
+class MovieSerializer(serializers.ModelSerializer):
+    # 05.20/23:35 추가
+    is_liked = serializers.SerializerMethodField()
     class Meta:
         model = Movie
-        fields = ('title', 'overview', 'liked_movies')
+        fields = ('id','title','release_date', 'production_countries', 'poster_path', 'is_liked')
         # fields = '__all__'
+    
+    # 05.20/23:35 추가
+    def get_is_liked(self, obj):
+        request = self.context.get('request', None)
+        if request and request.user.is_authenticated:
+            return request.user in obj.liked_movies.all()
+        return False
+
 
 
 class ReviewListSerializer(serializers.ModelSerializer):

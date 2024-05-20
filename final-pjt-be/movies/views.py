@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MovieSerialzer, MovieDetailSerializer, ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
+from .serializers import MovieSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
 
 # Create your views here.
 
@@ -20,8 +20,10 @@ def movie_review_list(request, movie_pk):
 @api_view(['GET'])
 def movie_list(request):
     movies = Movie.objects.all()
-    serialzer = MovieSerialzer(movies, many=True)
-    return Response(serialzer.data, status=status.HTTP_200_OK)
+    # 원본 코드
+    # serialzer = MovieSerialzer(movies, many=True)
+    serializer = MovieSerializer(movies, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # 영화 상세 내역 조회 원본 코드
 @api_view(['GET'])
@@ -29,12 +31,6 @@ def movie_detail(request,movie_pk):
     movie= Movie.objects.get(pk=movie_pk)
     serializer = MovieDetailSerializer(movie)
     return Response(serializer.data, status=status.HTTP_200_OK)
-# @api_view(['GET'])
-# def movie_detail(request, movie_pk):
-#     movie = get_object_or_404(Movie, pk=movie_pk)
-#     serializer = MovieDetailSerializer(movie)
-#     return Response(serializer.data)
-
 
 
 # 리뷰 목록 조회 뷰함수
