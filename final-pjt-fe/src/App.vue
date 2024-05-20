@@ -80,12 +80,3 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
 })
 </script>
-
-<style scoped>
-.bg-transparent {
-  background-color: transparent;
-}
-.backdrop-blur {
-  backdrop-filter: blur(10px);
-}
-</style>
