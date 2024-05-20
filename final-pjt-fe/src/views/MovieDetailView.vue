@@ -30,7 +30,10 @@
           <div>
             <p class="mb-4">
               <strong class="block">줄거리</strong>
-              {{ detailInfo.overview }}
+              <span v-if="detailInfo.overview">
+                {{ detailInfo.overview }}
+              </span>
+              <span v-else> 줄거리가 없지만 줄거리 없이 보는 맛이 있어요😏</span>
             </p>
           </div>
         </section>
@@ -65,7 +68,12 @@
             <span>< {{ detailInfo.title }} ></span>과 비슷한 영화들 추천드려요!
           </h2>
           <div v-if="!similarLoading">
-            <Carousel :movies="similarMovies" />
+            <div v-if="similarMovies.length > 0">
+              <Carousel :movies="similarMovies" />
+            </div>
+            <div v-else class="text-center py-10">
+              비슷한 영화가 없네요...😔 <br />매우 특별한 영화라고 할 수 있습니다ㅎ
+            </div>
           </div>
         </section>
       </div>
