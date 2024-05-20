@@ -36,7 +36,10 @@ def save_movie_data_to_db(movie_data):
             'backdrop_path': movie_data.get('backdrop_path', ''),
             'original_language': movie_data.get('original_language', ''),
             'genre_ids': movie_data.get('genre_ids', []),
-            'raw_data': movie_data  # 모든 데이터를 저장
+            'production_countries': movie_data.get('production_countries', []),
+            'still_cut_paths': movie_data.get('still_cut_paths', []),  # 스틸컷 URL 저장
+            'runtime': movie_data.get('runtime', None),  # 런닝 타임 저장
+
         }
     )
     return movie
@@ -49,6 +52,7 @@ def save_movies_to_json(movies_data, filename='movies_fixture.json'):
             "fields": movie_data  # 모든 데이터를 저장
         } for movie_data in movies_data if movie_data
     ]
+
 
     # Django 프로젝트 폴더 기준으로 경로 설정
     fixtures_dir = os.path.join(settings.BASE_DIR, 'movies', 'fixtures')
