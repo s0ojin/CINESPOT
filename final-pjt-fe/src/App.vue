@@ -60,6 +60,9 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { useAuthQuery } from './composables/useAuthQuery'
+
+useAuthQuery()
 
 const route = useRoute()
 const isScrolled = ref(false)
