@@ -13,7 +13,7 @@ from movies.models import Movie
 
 def fetch_movie_data(movie_id):
     api_key = settings.TMDB_API_KEY  # 실제 API 키로 변경하세요
-    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}'
+    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
     images_url = f'https://api.themoviedb.org/3/movie/{movie_id}/images?api_key={api_key}'
 
     movie_response = requests.get(movie_url)
