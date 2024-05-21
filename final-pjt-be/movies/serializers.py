@@ -65,14 +65,20 @@ class ReviewListSerializer(serializers.ModelSerializer):
 # 단일 영화 정보 제공
 class MovieDetailSerializer(serializers.ModelSerializer):
     # 리뷰 목록만 조회해 볼게여 일단 ㅋㅋ
-    review_set = ReviewListSerializer(read_only=True, many=True) #원본
+    # review_set = ReviewListSerializer(read_only=True, many=True) #원본
+    # 05.22,12:10, 영화 상세에는 달린 리뷰 6개만 보이기
+    review_set = serializers.SerializerMethodField() #원본
 
     class Meta:
         model = Movie
         # Movie Detail 페이지에 영화 title과 review 목록만 노출하겠단 의미
         fields = ['id', 'title', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
         # fields = '__all__' 
-
+    # 05.22,12:10,
+    # get_review_set(self, obj) 오버라이드해서 첫 6개 리뷰만 반환
+    def get_review_set(self, obj):
+        reviews = obj.review_set.all()[:6]
+        return ReviewListSerializer(reviews, many=True).data
 
 class ReviewDetailSerializer(serializers.ModelSerializer):
     # user = UserSerializer(read_only=True) # "user" : {'username':'harry'} ver.
