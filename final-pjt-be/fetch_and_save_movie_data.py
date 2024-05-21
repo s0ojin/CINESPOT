@@ -1,7 +1,6 @@
 import requests
 import os
 import django
-import sys
 import json
 
 # Django settings 모듈을 불러와서 설정값들을 사용할 수 있도록 설정
@@ -11,15 +10,39 @@ django.setup()
 from django.conf import settings
 from movies.models import Movie
 
-def fetch_movie_data(movie_id):
-    api_key = settings.TMDB_API_KEY  # 실제 API 키로 변경하세요
-    url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
-
-    response = requests.get(url)
+def fetch_genres():
+    api_key = settings.TMDB_API_KEY
+    # genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=en-US'
+    genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=ko-KR'
+    
+    response = requests.get(genres_url)
     if response.status_code == 200:
-        return response.json()
+        genres_data = response.json()
+        return {genre['id']: genre['name'] for genre in genres_data['genres']}
     else:
-        print(f'Failed to fetch movie data for movie ID {movie_id}:', response.status_code)
+        print(f'Failed to fetch genres: {response.status_code}')
+        return {}
+
+def fetch_movie_data(movie_id, genre_dict):
+    api_key = settings.TMDB_API_KEY
+    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
+    images_url = f'https://api.themoviedb.org/3/movie/{movie_id}/images?api_key={api_key}'
+
+    movie_response = requests.get(movie_url)
+    images_response = requests.get(images_url)
+    
+    if movie_response.status_code == 200 and images_response.status_code == 200:
+        movie_data = movie_response.json()
+        images_data = images_response.json()
+        still_cut_paths = [img['file_path'] for img in images_data.get('backdrops', [])]
+        movie_data['still_cut_paths'] = still_cut_paths
+        
+        # Convert genres field to genre_ids
+        movie_data['genre_ids'] = [genre['id'] for genre in movie_data.get('genres', [])]
+        movie_data['genres'] = [genre_dict[genre['id']] for genre in movie_data.get('genres', [])]
+        return movie_data
+    else:
+        print(f'Failed to fetch movie data for movie ID {movie_id}:', movie_response.status_code, images_response.status_code)
         return None
 
 def save_movie_data_to_db(movie_data):
@@ -29,17 +52,13 @@ def save_movie_data_to_db(movie_data):
             'title': movie_data.get('title', ''),
             'overview': movie_data.get('overview', ''),
             'release_date': movie_data.get('release_date', None),
-            'vote_average': movie_data.get('vote_average', None),
-            'vote_count': movie_data.get('vote_count', None),
-            'popularity': movie_data.get('popularity', None),
             'poster_path': movie_data.get('poster_path', ''),
             'backdrop_path': movie_data.get('backdrop_path', ''),
-            'original_language': movie_data.get('original_language', ''),
             'genre_ids': movie_data.get('genre_ids', []),
+            'genres': movie_data.get('genres', []),  # 장르 이름 저장
             'production_countries': movie_data.get('production_countries', []),
-            'still_cut_paths': movie_data.get('still_cut_paths', []),  # 스틸컷 URL 저장
-            'runtime': movie_data.get('runtime', None),  # 런닝 타임 저장
-
+            'still_cut_paths': movie_data.get('still_cut_paths', []),
+            'runtime': movie_data.get('runtime', None),
         }
     )
     return movie
@@ -53,7 +72,6 @@ def save_movies_to_json(movies_data, filename='movies_fixture.json'):
         } for movie_data in movies_data if movie_data
     ]
 
-
     # Django 프로젝트 폴더 기준으로 경로 설정
     fixtures_dir = os.path.join(settings.BASE_DIR, 'movies', 'fixtures')
     os.makedirs(fixtures_dir, exist_ok=True)
@@ -62,11 +80,12 @@ def save_movies_to_json(movies_data, filename='movies_fixture.json'):
     print(f'Successfully saved data to {filename}')
 
 if __name__ == "__main__":
+    genre_dict = fetch_genres()
     movies_data = []
     movie_id = 1
 
-    while len(movies_data) < 10:
-        movie_data = fetch_movie_data(movie_id)
+    while len(movies_data) < 50:
+        movie_data = fetch_movie_data(movie_id, genre_dict)
         if movie_data:
             movie = save_movie_data_to_db(movie_data)
             movies_data.append(movie_data)
