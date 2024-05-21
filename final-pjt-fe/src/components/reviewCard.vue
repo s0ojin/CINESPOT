@@ -15,7 +15,7 @@
     </div>
     <p class="mb-auto mt-4">{{ truncatedContent }}</p>
     <div class="flex justify-end mt-2 items-center gap-4">
-      <button @click="toggleLike" :class="{ 'text-red-500': liked }">
+      <button @click="toggleLike" :class="{ 'text-primary-500': liked }">
         <i :class="[liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up']"></i>
         <span class="ml-2">{{ likeCount }}</span>
       </button>

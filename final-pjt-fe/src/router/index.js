@@ -4,6 +4,7 @@ import MovieDetailView from '@/views/MovieDetailView.vue'
 import SignUpView from '@/views/SignUpView.vue'
 import SignInView from '@/views/SignInView.vue'
 import MypageView from '@/views/MypageView.vue'
+import ReviewDetailView from '@/views/ReviewDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,11 @@ const router = createRouter({
       name: 'signin',
       component: SignInView,
       meta: { noContainer: true, logoutRequired: true }
+    },
+    {
+      path: '/reviews/:reviewId',
+      name: 'reviewDetail',
+      component: ReviewDetailView
     },
     {
       path: '/mypage',
