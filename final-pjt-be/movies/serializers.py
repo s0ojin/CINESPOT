@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Movie, Review
+from .models import Movie, Review, Comment
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 
@@ -38,20 +38,29 @@ class ReviewListSerializer(serializers.ModelSerializer):
     # user = UserSerializer(read_only=True)  # 사용자 이름을 직렬화하기 위해 UserSerializer 사용
     user = serializers.SerializerMethodField()
     # 05.20,16:25, review_set 좋아요 기능 추가
-    like_count = serializers.SerializerMethodField()
+    # like_count = serializers.SerializerMethodField()
+    # 05.21,21:36, 리뷰에 달린 댓글 수 + 사용자 프로필 사진 기능 추가용
+    comment_count = serializers.SerializerMethodField()
+    userprofile = serializers.SerializerMethodField()
+    
     class Meta:
         model = Review
-        fields = ['id', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
+        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
         # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
 
     def get_user(self, obj):
         return obj.user.username
     
     # 0520 1548 추가
-    def get_like_count(self, obj):
-        return obj.likes.count()
+    # def get_like_count(self, obj):
+    #     return obj.likes.count()
     
-
+    # 05.21,21:36, 이하상동
+    def get_comment_count(self, obj):
+        return obj.comments.count()
+    def get_userprofile(self, obj):
+        profile_image = getattr(obj.user, 'profile_image', None)
+        return profile_image.url if profile_image else None
 
 # 단일 영화 정보 제공
 class MovieDetailSerializer(serializers.ModelSerializer):
@@ -61,8 +70,8 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         # Movie Detail 페이지에 영화 title과 review 목록만 노출하겠단 의미
-        # fields = ('title','review_set') 
-        fields = '__all__' 
+        fields = ['id', 'title', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
+        # fields = '__all__' 
 
 
 class ReviewDetailSerializer(serializers.ModelSerializer):
