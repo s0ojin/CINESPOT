@@ -2,7 +2,7 @@
   <div>
     <div v-if="isLoading" class="text-center">Loading...</div>
     <div v-if="error" class="text-center text-red-500">Error: {{ error.message }}</div>
-    <div v-if="detailInfo" class="">
+    <div v-if="detailInfo">
       <header class="relative h-[500px]">
         <img
           :src="`https://image.tmdb.org/t/p/original${detailInfo.backdrop_path}`"
@@ -40,13 +40,13 @@
         <section>
           <div class="flex justify-between items-end px-2">
             <h2 class="text-2xl font-bold">
-              리뷰 <span class="font-normal text-primary-500 ml-1">{{ reviewDummy.length }}개</span>
+              리뷰 <span class="font-normal text-primary-500 ml-1">{{ detailInfo.review_set.length }}개</span>
             </h2>
             <button class="text-slate-700">더보기</button>
           </div>
 
-          <div v-if="reviewDummy.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            <div v-for="review in reviewDummy" :key="review.id">
+          <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+            <div v-for="review in detailInfo.review_set" :key="review.id">
               <reviewCard :review="review" />
             </div>
           </div>
@@ -58,9 +58,12 @@
         <section>
           <h2 class="text-2xl font-bold p-2">스틸컷</h2>
           <div class="flex gap-2 overflow-hidden">
-            <div v-for="(image, index) in images" :key="index">
-              <img :src="`https://image.tmdb.org/t/p/w500/${image}`" alt="still_cut" class="" />
+            <div v-if="detailInfo.still_cut_paths.length > 0">
+              <div v-for="(image, index) in detailInfo.still_cut_paths" :key="index">
+                <img :src="`https://image.tmdb.org/t/p/w500/${image}`" alt="still_cut" />
+              </div>
             </div>
+            <div v-else class="mx-auto py-10">영화 이미지가 존재하지 않습니다😫</div>
           </div>
         </section>
         <section>
@@ -104,13 +107,4 @@ const { data: similarMovies, isLoading: similarLoading } = useQuery({
   queryKey: ['similarMovies', movieId],
   queryFn: () => getSimilarMovies(movieId).then((res) => res.data.results)
 })
-
-const images = [
-  'fqv8v6AycXKsivp1T5yKtLbGXce.jpg',
-  'fqv8v6AycXKsivp1T5yKtLbGXce.jpg',
-  'fqv8v6AycXKsivp1T5yKtLbGXce.jpg',
-  'fqv8v6AycXKsivp1T5yKtLbGXce.jpg'
-]
-
-const reviewDummy = []
 </script>
