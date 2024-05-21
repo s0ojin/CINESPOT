@@ -23,20 +23,33 @@ const router = createRouter({
       path: '/signup',
       name: 'signup',
       component: SignUpView,
-      meta: { noContainer: true }
+      meta: { noContainer: true, logoutRequired: true }
     },
     {
       path: '/signin',
       name: 'signin',
       component: SignInView,
-      meta: { noContainer: true }
+      meta: { noContainer: true, logoutRequired: true }
     },
     {
       path: '/mypage',
       name: 'mypage',
-      component: MypageView
+      component: MypageView,
+      meta: { authRequired: true }
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = localStorage.getItem('token')
+
+  if (to.meta.authRequired && !isLoggedIn) {
+    next({ name: 'signin' })
+  } else if (to.meta.logoutRequired && isLoggedIn) {
+    next({ name: 'home' })
+  } else {
+    next()
+  }
 })
 
 export default router
