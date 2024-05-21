@@ -36,9 +36,13 @@ def movie_detail(request,movie_pk):
 
 
 # 리뷰 목록 조회 뷰함수
+# 05.22, 00:32, 전체 수정
 @api_view(['GET'])
-def review_list(request):
-    reviews = Review.objects.all()
+def review_list(request, movie_pk):
+    movie = get_object_or_404(Movie, pk=movie_pk)
+    # 원본 코드
+    # reviews = Review.objects.all()
+    reviews = Review.objects.filter(movie=movie)
     serializer = ReviewListSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
