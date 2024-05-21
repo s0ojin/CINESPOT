@@ -6,7 +6,7 @@
 
     <h2 class="p-2 font-semibold text-xl">로맨스를 좋아하는 경령님을 위한 추천영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="popularMovies" />
+      <Carousel :movies="movies" />
     </div>
   </div>
   <div>
@@ -15,7 +15,7 @@
 
     <h2 class="p-2 font-semibold text-xl">오늘 날씨와 어울리는 추천영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="popularMovies" />
+      <Carousel :movies="movies" />
     </div>
   </div>
   <div>
@@ -24,7 +24,7 @@
 
     <h2 class="p-2 font-semibold text-xl">현재 인기있는 영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="popularMovies" />
+      <Carousel :movies="movies" />
     </div>
   </div>
 </template>
@@ -32,14 +32,14 @@
 <script setup>
 import Carousel from '@/components/Carousel.vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getPopularMovies } from '@/apis/movieApi'
+import { getMovies } from '@/apis/movieApi'
 
 const {
-  data: popularMovies,
+  data: movies,
   error,
   isLoading
 } = useQuery({
-  queryKey: ['popularMovies'],
-  queryFn: () => getPopularMovies().then((res) => res.data.results)
+  queryKey: ['movies'],
+  queryFn: () => getMovies().then((res) => res.data)
 })
 </script>
