@@ -41,7 +41,8 @@ class ReviewListSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     class Meta:
         model = Review
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count']
+        fields = ['id', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
+        # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
 
     def get_user(self, obj):
         return obj.user.username
@@ -92,7 +93,8 @@ class ReviewGenSerializer(serializers.ModelSerializer):
     movie = MovieContentSerializer(read_only=True) # 변경
     class Meta:
         model = Review
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user']
+        fields = ['id', 'content', 'created_at', 'updated_at', 'movie', 'user', 'rating']
+        # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'rating']
         read_only_fields = ('user','movie')
 
     def get_user(self, obj):
@@ -104,6 +106,3 @@ class ReviewGenSerializer(serializers.ModelSerializer):
         validated_data['user'] = user
         validated_data['movie'] = movie
         return super().create(validated_data)
-
-
-
