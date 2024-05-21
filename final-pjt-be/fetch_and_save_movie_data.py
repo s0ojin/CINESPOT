@@ -12,7 +12,8 @@ from movies.models import Movie
 
 def fetch_genres():
     api_key = settings.TMDB_API_KEY
-    genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=en-US'
+    # genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=en-US'
+    genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=ko-KR'
     
     response = requests.get(genres_url)
     if response.status_code == 200:
@@ -24,7 +25,7 @@ def fetch_genres():
 
 def fetch_movie_data(movie_id, genre_dict):
     api_key = settings.TMDB_API_KEY
-    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}'
+    movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
     images_url = f'https://api.themoviedb.org/3/movie/{movie_id}/images?api_key={api_key}'
 
     movie_response = requests.get(movie_url)
