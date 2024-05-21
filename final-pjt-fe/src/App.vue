@@ -11,7 +11,9 @@
           <h1 class="text-2xl font-extrabold text-primary-500">CINESPOT</h1>
         </RouterLink>
         <div class="flex gap-4">
-          <RouterLink v-if="route.name !== 'signin' && route.name !== 'signup'" to="/signin">로그인</RouterLink>
+          <RouterLink v-if="!isLoggedIn && route.name !== 'signin' && route.name !== 'signup'" to="/signin"
+            >로그인</RouterLink
+          >
           <RouterLink v-if="route.name !== 'signin' && route.name !== 'signup'" to="/mypage">마이페이지</RouterLink>
         </div>
       </div>
@@ -60,6 +62,10 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { useAuthQuery } from './composables/useAuthQuery'
+
+const { data: authData } = useAuthQuery()
+const isLoggedIn = computed(() => !!authData?.value)
 
 const route = useRoute()
 const isScrolled = ref(false)

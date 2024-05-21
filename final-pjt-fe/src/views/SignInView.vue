@@ -3,18 +3,18 @@
     <div class="absolute inset-0 bg-gradient-to-t from-transparent via-white/50 to-white"></div>
     <img
       src="https://source.unsplash.com/random?nature&q=full"
-      alt="Signup Background"
+      alt="Signin Background"
       class="w-full h-full object-cover"
     />
     <div class="absolute w-1/3 p-20 pb-14 bg-white rounded-2xl shadow-2xl flex flex-col justify-center gap-12">
-      <form class="flex flex-col gap-6 w-full">
+      <form @submit.prevent="handleSignIn" class="flex flex-col gap-6 w-full">
         <div class="mb-8 flex flex-col gap-2 items-center">
           <h2 class="text-4xl font-bold text-primary-500">CINESPOT</h2>
           <p class="text-primary-900">영화 속 그 장소, CINESPOT에서 찾아줄게요!</p>
         </div>
         <div class="relative">
-          <input type="text" class="input peer" v-model="email" placeholder="" />
-          <label class="input-label">EMAIL</label>
+          <input type="text" class="input peer" v-model="username" placeholder="" />
+          <label class="input-label">USERNAME</label>
         </div>
         <div class="relative">
           <input type="password" class="input peer" v-model="password" placeholder="" />
@@ -31,9 +31,31 @@
 </template>
 
 <script setup>
+import { postSignIn } from '@/apis/authApi'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
+const router = useRouter()
+const queryClient = useQueryClient()
+
+const signInMutation = useMutation({
+  mutationFn: postSignIn,
+  onSuccess: (data) => {
+    const token = data.data.key
+    localStorage.setItem('token', token)
+    queryClient.setQueryData(['auth'], { token })
+    alert('로그인 성공!')
+    router.push('/')
+  },
+  onError: (err) => {
+    alert('로그인 실패!', err)
+  }
+})
+
+const handleSignIn = () => {
+  signInMutation.mutate({ username: username.value, password: password.value })
+}
 </script>
