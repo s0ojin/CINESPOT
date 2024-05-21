@@ -13,11 +13,7 @@ export const getMovies = () => {
 }
 
 export const getMovieDetails = (movieId) => {
-  return publicApi.get(`/api/v1/movies/${movieId}`, {
-    params: {
-      language: 'ko-KR'
-    }
-  })
+  return publicApi.get(`/api/v1/movies/${movieId}`)
 }
 
 export const getSimilarMovies = (movieId) => {
