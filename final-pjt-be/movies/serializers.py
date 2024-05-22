@@ -13,23 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
-class UserInfoSerializer(serializers.ModelSerializer):
-    userprofile = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = User
-        fields = ['id','username','userprofile']
-    
-    def get_user(self, obj):
-        return obj.user.username
-    
-    def get_userprofile(self, obj):
-        if hasattr(obj, 'profile') and obj.profile.image:
-            return obj.profile.image.url
-        return None
-
-
-
 class MovieContentSerializer(serializers.ModelSerializer): # 이거 좀 무쓸모 같은데,,
     class Meta:
         model = Movie
