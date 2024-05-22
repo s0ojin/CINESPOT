@@ -47,12 +47,12 @@
             <h2 class="text-2xl font-bold">
               리뷰 <span class="font-normal text-primary-500 ml-1">{{ detailInfo.review_set.length }}개</span>
             </h2>
-            <RouterLink :to="{ name: 'movieReviewList', params: { movieId: detailInfo.id } }" class="text-slate-700"
-              >더보기</RouterLink
-            >
+            <button v-if="detailInfo.review_set.length > 0" @click="goToReviewList" class="text-slate-700">
+              더보기
+            </button>
           </div>
 
-          <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+          <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div v-for="review in detailInfo.review_set" :key="review.id">
               <reviewCard :review="review" />
             </div>
@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovieDetails, getSimilarMovies } from '@/apis/movieApi'
 import { getCountryNameInKorean } from '@/utils/convertCountryName'
@@ -102,6 +102,7 @@ import MovieCarousel from '@/components/MovieCarousel.vue'
 import CreateReview from '@/components/CreateReview.vue'
 
 const route = useRoute()
+const router = useRouter()
 const movieId = route.params.movieId
 
 const {
@@ -121,4 +122,11 @@ const {
   queryKey: ['similarMovies'],
   queryFn: () => getSimilarMovies(movieId).then((res) => res.data.results)
 })
+
+const goToReviewList = () => {
+  router.push({
+    name: 'movieReviewList',
+    params: { movieId: detailInfo.id }
+  })
+}
 </script>
