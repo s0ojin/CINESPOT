@@ -31,14 +31,15 @@
             alt="Poster"
             class="h-96 object-cover border rounded-md"
           />
-          <div>
-            <p class="mb-4">
+          <div class="flex-1">
+            <p class="mb-6">
               <strong class="block">줄거리</strong>
               <span v-if="detailInfo.overview">
                 {{ detailInfo.overview }}
               </span>
               <span v-else> 줄거리가 없지만 줄거리 없이 보는 맛이 있어요😏</span>
             </p>
+            <CreateReview />
           </div>
         </section>
         <section>
@@ -62,7 +63,7 @@
           </div>
         </section>
         <section>
-          <h2 class="text-2xl font-bold p-2">스틸컷</h2>
+          <h2 class="text-2xl font-bold p-2">갤러리</h2>
           <div class="flex">
             <div class="overflow-x-auto whitespace-nowrap py-2 px-4">
               <img
@@ -95,9 +96,10 @@
 import { RouterLink, useRoute } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovieDetails, getSimilarMovies } from '@/apis/movieApi'
+import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import reviewCard from '@/components/reviewCard.vue'
 import MovieCarousel from '@/components/MovieCarousel.vue'
-import { getCountryNameInKorean } from '@/utils/convertCountryName'
+import CreateReview from '@/components/CreateReview.vue'
 
 const route = useRoute()
 const movieId = route.params.movieId
