@@ -14,7 +14,7 @@
       </div>
     </div>
     <p class="mb-auto mt-4">{{ truncatedContent }}</p>
-    <div class="flex justify-end mt-2 items-center gap-4">
+    <div class="flex justify-end mt-2 items-center gap-4 text-slate-700">
       <button @click="toggleLike" :class="{ 'text-primary-500': liked }">
         <i :class="[liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up']"></i>
         <span class="ml-2">{{ likeCount }}</span>
@@ -31,11 +31,16 @@
 import { computed, ref } from 'vue'
 
 const props = defineProps({
-  review: Object
+  review: Object,
+  contentLimit: {
+    type: Number,
+    default: 120
+  }
 })
 
-const liked = ref(false)
+const liked = ref(props.review.liked)
 const likeCount = ref(props.review.likes)
+const contentLimit = ref(props.contentLimit)
 
 const toggleLike = () => {
   liked.value = !liked.value
@@ -43,6 +48,8 @@ const toggleLike = () => {
 }
 
 const truncatedContent = computed(() => {
-  return props.review.content.length > 120 ? props.review.content.slice(0, 120) + '...' : props.review.content
+  return props.review.content.length > contentLimit.value
+    ? props.review.content.slice(0, contentLimit.value) + '...'
+    : props.review.content
 })
 </script>
