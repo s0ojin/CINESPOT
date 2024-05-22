@@ -4,7 +4,7 @@
       <div
         class="absolute w-6 h-12 left-0 transition-colors duration-300"
         @mousemove="setHoverRating(star - 0.5)"
-        @click="setRating(star - 0.5)"
+        @click="updateRating(star - 0.5)"
       >
         <svg viewBox="0 0 12 24" class="w-full h-full fill-current" :class="getStarClass(star - 0.5)">
           <defs>
@@ -22,7 +22,7 @@
       <div
         class="absolute w-6 h-12 left-6 transition-colors duration-300"
         @mousemove="setHoverRating(star)"
-        @click="setRating(star)"
+        @click="updateRating(star)"
       >
         <svg viewBox="12 0 12 24" class="w-full h-full fill-current" :class="getStarClass(star)">
           <defs>
@@ -41,9 +41,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineProps, defineEmits } from 'vue'
 
-const rating = ref(0)
+const props = defineProps({
+  modelValue: {
+    type: Number,
+    default: 0
+  }
+})
+const emit = defineEmits(['update:modelValue'])
+
 const hoverRating = ref(0)
 
 const resetHoverRating = () => {
@@ -54,12 +61,12 @@ const setHoverRating = (value) => {
   hoverRating.value = value
 }
 
-const setRating = (value) => {
-  rating.value = value
+const updateRating = (value) => {
+  emit('update:modelValue', value)
 }
 
 const getStarClass = (value) => {
-  const totalRating = hoverRating.value || rating.value
+  const totalRating = hoverRating.value || props.modelValue
   return totalRating >= value ? 'text-yellow-400' : 'text-gray-200'
 }
 </script>
