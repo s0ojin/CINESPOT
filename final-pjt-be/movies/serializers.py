@@ -57,22 +57,22 @@ class ReviewListSerializer(serializers.ModelSerializer):
     # user = UserSerializer(read_only=True)  # 사용자 이름을 직렬화하기 위해 UserSerializer 사용
     user = serializers.SerializerMethodField()
     # 05.20,16:25, review_set 좋아요 기능 추가
-    # like_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
     # 05.21,21:36, 리뷰에 달린 댓글 수 + 사용자 프로필 사진 기능 추가용
     comment_count = serializers.SerializerMethodField()
     userprofile = serializers.SerializerMethodField()
     
     class Meta:
         model = Review
-        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
+        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count', 'like_count'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
         # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
 
     def get_user(self, obj):
         return obj.user.username
     
     # 0520 1548 추가
-    # def get_like_count(self, obj):
-    #     return obj.likes.count()
+    def get_like_count(self, obj):
+        return obj.likes.count()
     
     # 05.21,21:36, 이하상동
     def get_comment_count(self, obj):
