@@ -81,29 +81,39 @@ class ReviewListSerializer(serializers.ModelSerializer):
         return get_user_profile_image(obj.user)
 
 
-class ReviewDetailSerializer(serializers.ModelSerializer):
-    class MovieDetailSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Movie
-            fields = ['id', 'title', 'poster_path', 'production_countries', 'release_date', 'genres', 'runtime']
-
-    class CommentDetailSerializer(serializers.ModelSerializer):
-        authorInfo = serializers.SerializerMethodField()
-
-        class Meta:
-            model = Comment
-            fields = ['id', 'content', 'created_at', 'authorInfo']
-
-        def get_authorInfo(self, obj):
-            return {
-                "id": obj.user.id,
-                "author": obj.user.username,
-                "authorProfile": get_user_profile_image(obj.user)
-            }
-
+# 05.22,01:28
+class CommentDetailSerializer(serializers.ModelSerializer):
     authorInfo = serializers.SerializerMethodField()
-    movieInfo = MovieDetailSerializer(source='movie', read_only=True)
-    comments = CommentDetailSerializer(many=True, read_only=True, source='comment_set')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'content', 'created_at', 'authorInfo']
+        read_only_fields = ['user', 'created_at']
+
+    def get_authorInfo(self, obj):
+        return {
+            "id": obj.user.id,
+            "author": obj.user.username,
+            "authorProfile": get_user_profile_image(obj.user)
+        }
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        review = validated_data.pop('review')
+        user = request.user
+        comment = Comment.objects.create(review=review, user=user, **validated_data)
+        return comment
+
+
+
+class ReviewDetailSerializer(serializers.ModelSerializer):
+    authorInfo = serializers.SerializerMethodField()
+    # 원본 movieInfo 필드
+    # movieInfo = MovieDetailSerializer(source='movie', read_only=True)
+    movieInfo = serializers.SerializerMethodField()
+    # 원본 comments 필드
+    # comments = CommentDetailSerializer(many=True, read_only=True, source='comment_set')
+    comments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -119,6 +129,23 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+    
+    def get_comments(self, obj):
+        comments = obj.comments.all()
+        return CommentDetailSerializer(comments, many=True).data
+    
+    def get_movieInfo(self, obj):
+        movie = obj.movie
+        return {
+            "id": movie.id,
+            "title": movie.title,
+            "poster_path": movie.poster_path,
+            "production_countries": movie.production_countries,
+            "release_date": movie.release_date,
+            "genres": movie.genres,
+            "runtime": movie.runtime,
+        }
+
 
 
 # 리뷰 생성하는 애
@@ -144,30 +171,6 @@ class ReviewGenSerializer(serializers.ModelSerializer):
         validated_data['movie'] = movie
         return super().create(validated_data)
 
-
-# 05.22,01:28
-
-class CommentDetailSerializer(serializers.ModelSerializer):
-    authorInfo = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Comment
-        fields = ['id', 'user', 'content', 'created_at', 'authorInfo']
-        read_only_fields = ['user', 'created_at']
-
-    def get_authorInfo(self, obj):
-        return {
-            "id": obj.user.id,
-            "author": obj.user.username,
-            "authorProfile": get_user_profile_image(obj.user)
-        }
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        review = validated_data.pop('review')
-        user = request.user
-        comment = Comment.objects.create(review=review, user=user, **validated_data)
-        return comment
 
 
 class CommentSerializer(serializers.ModelSerializer):
