@@ -2,11 +2,11 @@
   <div class="max-w-4xl mx-auto">
     <div v-if="isLoading">Loading review...</div>
     <div v-if="error">Error loading review: {{ error.message }}</div>
-    <div v-if="!isLoading && !error">
+    <div v-if="!isLoading && !error && review">
       <div class="flex items-center">
-        <img :src="review.profileImage" alt="Author Avatar" class="h-10 w-10 rounded-full mr-2" />
+        <img :src="review.authorInfo.authorProfile" alt="Author Avatar" class="h-10 w-10 rounded-full mr-2" />
         <div>
-          <p class="font-semibold">{{ review.author }}</p>
+          <p class="font-semibold">{{ review.authorInfo.author }}</p>
           <p class="text-sm text-slate-600">{{ getConvertedTime(review.created_at) }}</p>
         </div>
         <button @click="toggleDropdown()" class="pi pi-ellipsis-v p-2 pr-0 text-md text-slate-500 ml-auto"></button>
@@ -23,33 +23,45 @@
         @click="handleToMovieDetail"
       >
         <img
-          :src="`https://image.tmdb.org/t/p/w500${review.movie.poster_path}`"
+          :src="`https://image.tmdb.org/t/p/w500${review.movieInfo.poster_path}`"
           alt="Poster"
           class="rounded-lg border object-cover"
         />
         <div class="flex w-full justify-between items-center">
           <div>
             <h2>
-              {{ review.movie.title }}
+              {{ review.movieInfo.title }}
             </h2>
             <div class="flex gap-2 text-sm text-slate-600">
-              <span>{{ review.movie.release_date.split('-')[0] }}</span>
+              <span>{{ review.movieInfo.release_date.split('-')[0] }}</span>
               <span class="leading-3">.</span>
-              <span>{{ getCountryNameInKorean(review.movie.production_country) }}</span>
+              <span>{{ getCountryNameInKorean(review.movieInfo.production_countries[0].iso_3166_1) }}</span>
               <span class="leading-3">.</span>
-              <span>{{ review.movie.runtime }}분</span>
+              <span>{{ review.movieInfo.runtime }}분</span>
             </div>
             <div class="flex gap-2 flex-wrap mt-2 text-sm">
-              <span v-for="genre in review.movie.genre_ids" :key="genre.id" class="border py-1 px-2 rounded-2xl">{{
-                genre.name
+              <span v-for="(genre, idx) in review.movieInfo.genres" :key="idx" class="border py-1 px-2 rounded-2xl">{{
+                genre
               }}</span>
             </div>
           </div>
-          <div class="flex flex-col items-center">
-            <p class="text-xl">{{ review.score }}</p>
+          <div class="flex items-center">
+            <span class="mr-2">{{ review.rating }}</span>
             <div class="flex">
-              <i v-for="i in 5" :key="i" class="text-yellow-500">
-                <i :class="i <= review.score / 2 ? 'pi pi-star-fill' : 'pi pi-star'"></i>
+              <i v-for="i in 5" :key="i" class="text-yellow-500 relative">
+                <i v-if="getStarStatus(review.rating, i) === 'half'">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 576 512"
+                    class="w-[18px] fill-yellow-500 mt-[3px]"
+                    fill="current"
+                  >
+                    <path
+                      d="M309.5 13.5C305.5 5.2 297.1 0 287.9 0s-17.6 5.2-21.6 13.5L197.7 154.8 44.5 177.5c-9 1.3-16.5 7.6-19.3 16.3s-.5 18.1 5.9 24.5L142.2 328.4 116 483.9c-1.5 9 2.2 18.1 9.7 23.5s17.3 6 25.3 1.7l137-73.2 137 73.2c8.1 4.3 17.9 3.7 25.3-1.7s11.2-14.5 9.7-23.5L433.6 328.4 544.8 218.2c6.5-6.4 8.7-15.9 5.9-24.5s-10.3-14.9-19.3-16.3L378.1 154.8 309.5 13.5zM288 384.7V79.1l52.5 108.1c3.5 7.1 10.2 12.1 18.1 13.3l118.3 17.5L391 303c-5.5 5.5-8.1 13.3-6.8 21l20.2 119.6L299.2 387.5c-3.5-1.9-7.4-2.8-11.2-2.8z"
+                    />
+                  </svg>
+                </i>
+                <i :class="getStarStatus(review.rating, i)"></i>
               </i>
             </div>
           </div>
@@ -60,10 +72,10 @@
         <p class="text-slate-800 pb-8">{{ review.content }}</p>
 
         <div class="flex justify-end mt-2 items-center gap-4 text-slate-700">
-          <button @click="toggleLike" :class="{ 'text-primary-500': liked }">
-            <i :class="[liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up']"></i>
+          <div @click="toggleLike">
+            <!-- <i :class="[liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up']"></i> -->
             <span class="ml-2">{{ review.likes_count }}</span>
-          </button>
+          </div>
           <div>
             <i class="pi pi-comment"></i>
             <span class="ml-1">{{ review.comments.length }}</span>
@@ -101,63 +113,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { getCountryNameInKorean } from '@/utils/convertCountryName'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import CommentCard from '@/components/CommentCard.vue'
 import { getConvertedTime } from '@/utils/convertTime.js'
+import { useQuery } from '@tanstack/vue-query'
+import { getReviewDetail } from '@/apis/reviewApi'
+import { getStarStatus } from '@/utils/getStarStatus'
 
 const router = useRouter()
+const route = useRoute()
+const reviewId = route.params.reviewId
 
-// 더미 데이터
-const review = ref(null)
-const isLoading = ref(true)
-const error = ref(null)
-
-const dummyReviewDetail = {
-  movie: {
-    id: 5,
-    title: '인셉션',
-    poster_path: '/3rvvpS9YPM5HB2f4HYiNiJVtdam.jpg',
-    production_country: 'US',
-    release_date: '2010-07-16',
-    genre_ids: [
-      { id: 1, name: '코미디' },
-      { id: 2, name: 'SF' }
-    ],
-    runtime: 100
-  },
-  id: 1,
-  author: '박수진차진차',
-  content:
-    '이 영화 진짜 너무 너무 너문 ㅁ눔 내스타일 취저 너무 재밌어 인생영화이 영화 진짜 너무 너무 너문 ㅁ눔 내스타일 취저 너무 재밌어 인생영화이 영화 진짜 너무 너무 너문 ㅁ눔 내스타일 취저 너무 재밌어 인생영화이 영화 진짜 너무 너무 너문 ㅁ눔 내스타일 취저 너무 재밌어 인생영화이 영화 진짜 너무 너무 너문 ㅁ눔 내스타일 취저 너무 재밌어 인생영화',
-  profileImage: 'https://via.placeholder.com/150',
-  created_at: '2023-05-01T12:34:56Z',
-  updated_at: '2023-05-02T14:23:45Z',
-  likes_count: 120,
-  score: 3.5,
-  comments: [
-    {
-      id: 1,
-      created_at: '2024-05-21T12:34:56Z',
-      author: '박경령차영차',
-      content:
-        '저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.저는 이영화가 개쓰레기라고 생각해요.'
-    },
-    {
-      id: 2,
-      author: 'Bob Johnson',
-      created_at: '2023-05-01T12:34:56Z',
-      content: 'A masterpiece by Christopher Nolan. A must-watch!'
-    }
-  ]
-}
-
-onMounted(() => {
-  setTimeout(() => {
-    review.value = dummyReviewDetail
-    isLoading.value = false
-  }, 1000)
+const {
+  data: review,
+  error,
+  isLoading
+} = useQuery({
+  queryKey: ['reviewDetail', reviewId],
+  queryFn: () => getReviewDetail(reviewId).then((res) => res.data)
 })
 
 const likes = ref(review.value?.likes_count)
@@ -181,7 +156,7 @@ const addComment = () => {
 }
 
 const handleToMovieDetail = () => {
-  router.push({ name: 'movieDetail', params: { movieId: review.value.movie.id } })
+  router.push({ name: 'movieDetail', params: { movieId: review.value.movieInfo.id } })
 }
 
 const isDropdownVisible = ref(false)
