@@ -3,14 +3,18 @@
     <div v-if="isLoading">Loading review...</div>
     <div v-if="error">Error loading review: {{ error.message }}</div>
     <div v-if="!isLoading && !error && review">
-      <div class="flex items-center">
+      <div class="flex items-center relative">
         <img :src="review.authorInfo.authorProfile" alt="Author Avatar" class="h-10 w-10 rounded-full mr-2" />
         <div>
           <p class="font-semibold">{{ review.authorInfo.author }}</p>
           <p class="text-sm text-slate-600">{{ getConvertedTime(review.created_at) }}</p>
         </div>
-        <button @click="toggleDropdown()" class="pi pi-ellipsis-v p-2 pr-0 text-md text-slate-500 ml-auto"></button>
-        <div v-if="isDropdownVisible" class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10">
+        <button @click="toggleDropdown(true)" class="pi pi-ellipsis-v p-2 pr-0 text-md text-slate-500 ml-auto"></button>
+        <div
+          ref="dropdown"
+          v-if="isDropdownVisible"
+          class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10"
+        >
           <ul>
             <li @click="confirmDelete(review.id)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">삭제하기</li>
             <li @click="editReview(review.id)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">수정하기</li>
@@ -99,7 +103,11 @@
       </div>
 
       <!-- 삭제 확인 모달 -->
-      <div v-if="isModalVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div
+        @click="hideModal"
+        v-if="isModalVisible"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
         <div class="bg-white p-6 rounded shadow-lg">
           <p class="mb-4">정말 리뷰를 삭제할까요?</p>
           <div class="flex gap-2 w-full">
@@ -121,6 +129,7 @@ import { getConvertedTime } from '@/utils/convertTime.js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getReviewDetail, postCreateComment } from '@/apis/reviewApi'
 import { getStarStatus } from '@/utils/getStarStatus'
+import { onClickOutside } from '@vueuse/core'
 
 const router = useRouter()
 const route = useRoute()
@@ -149,6 +158,9 @@ const commentMutation = useMutation({
 const likes = ref(review.value?.likes_count)
 const liked = ref(false)
 const newComment = ref('')
+const dropdown = ref(null)
+
+onClickOutside(dropdown, () => toggleDropdown(false))
 
 const toggleLike = () => {
   liked.value = !liked.value
@@ -170,8 +182,8 @@ const isDropdownVisible = ref(false)
 const isModalVisible = ref(false)
 const commentToDelete = ref(null)
 
-const toggleDropdown = () => {
-  isDropdownVisible.value = true
+const toggleDropdown = (boolean) => {
+  isDropdownVisible.value = boolean
 }
 
 const deleteReview = () => {

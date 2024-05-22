@@ -13,6 +13,7 @@
         </div>
         <button @click="toggleDropdown(comment.id)" class="pi pi-ellipsis-v p-2 pr-0 text-xs text-slate-500"></button>
         <div
+          ref="dropdown"
           v-if="isDropdownVisible && activeCommentId === comment.id"
           class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10"
         >
@@ -25,7 +26,11 @@
     </div>
 
     <!-- 삭제 확인 모달 -->
-    <div v-if="isModalVisible" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div
+      @click="hideModal"
+      v-if="isModalVisible"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+    >
       <div class="bg-white p-6 rounded shadow-lg">
         <p class="mb-4">정말 댓글을 삭제할까요?</p>
         <div class="flex gap-2 w-full">
@@ -43,6 +48,7 @@ import { getConvertedTime } from '@/utils/convertTime.js'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { deleteComment } from '@/apis/reviewApi'
 import { useRoute } from 'vue-router'
+import { onClickOutside } from '@vueuse/core'
 
 defineProps({
   comments: {
@@ -68,6 +74,9 @@ const isDropdownVisible = ref(false)
 const activeCommentId = ref(null)
 const isModalVisible = ref(false)
 const targetCommentId = ref(null)
+
+const dropdown = ref(null)
+onClickOutside(dropdown, () => toggleDropdown(false))
 
 const toggleDropdown = (commentId) => {
   if (activeCommentId.value === commentId) {
