@@ -48,10 +48,24 @@ def review_list(request, movie_pk):
     serializer = ReviewListSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+# 영화 별 리뷰 생성
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_review(request, movie_pk):
+    # movie = Movie.objects.get(pk=movie_pk)
+    movie = get_object_or_404(Movie, pk=movie_pk)
+    serializer = ReviewGenSerializer(data=request.data,  context={'request': request, 'movie': movie})
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+        # serializer.save(movie=movie)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @api_view(['GET', 'PUT', 'DELETE'])
 def review_detail(request, review_pk):
-    # 원본
-    # review = Review.objects.get(pk=review_pk)
     review = get_object_or_404(Review, pk=review_pk)
     if request.method == 'GET':
         serializer = ReviewDetailSerializer(review)
@@ -66,18 +80,8 @@ def review_detail(request, review_pk):
     elif request.method == 'DELETE':
         review.delete()
         return Response({'message': f'review {review_pk} is deleted.'}, status=status.HTTP_204_NO_CONTENT)
-    
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_review(request, movie_pk):
-    # movie = Movie.objects.get(pk=movie_pk)
-    movie = get_object_or_404(Movie, pk=movie_pk)
-    serializer = ReviewGenSerializer(data=request.data,  context={'request': request, 'movie': movie})
-    if serializer.is_valid(raise_exception=True):
-        serializer.save()
-        # serializer.save(movie=movie)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     
 # 영화 좋아요
 @api_view(['POST'])
