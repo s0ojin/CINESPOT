@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .utils import get_user_profile_image
 
+# 설정된 로거 가져오기 (앱 이름을 'myapp'으로 가정)
+import logging
+logger = logging.getLogger('myapp')
+
+
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,17 +46,23 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     # review_set = ReviewListSerializer(read_only=True, many=True) #원본
     # 05.22, 00:10, 영화 상세에는 달린 리뷰 6개만 보이기
     review_set = serializers.SerializerMethodField() #원본
+    is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
-        # Movie Detail 페이지에 영화 title과 review 목록만 노출하겠단 의미
-        fields = ['id', 'title', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
+        fields = ['id', 'title', 'is_liked', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
         # fields = '__all__' 
     # 05.22, 00:10,
     # get_review_set(self, obj) 오버라이드해서 첫 6개 리뷰만 반환
     def get_review_set(self, obj):
         reviews = obj.review_set.all()[:6]
         return ReviewListSerializer(reviews, many=True).data
+    
+    def get_is_liked(self, obj):
+        request = self.context.get('request', None)
+        if request and request.user.is_authenticated:
+            return request.user in obj.liked_movies.all()
+        return False
 
 
 class ReviewListSerializer(serializers.ModelSerializer):
@@ -62,10 +73,11 @@ class ReviewListSerializer(serializers.ModelSerializer):
     # 05.21,21:36, 리뷰에 달린 댓글 수 + 사용자 프로필 사진 기능 추가용
     comment_count = serializers.SerializerMethodField()
     userprofile = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
     
     class Meta:
         model = Review
-        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count', 'like_count'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
+        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count', 'like_count','is_liked'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
         # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
 
     def get_user(self, obj):
@@ -74,6 +86,15 @@ class ReviewListSerializer(serializers.ModelSerializer):
     # 0520 1548 추가
     def get_like_count(self, obj):
         return obj.likes.count()
+    
+    def get_is_liked(self, obj):
+        request = self.context.get('request', None)
+        if request and request.user.is_authenticated:
+            # return request.user in obj.likes.all()
+            is_liked = request.user in obj.likes.all()
+            logger.debug(f"User {request.user.username} {'liked' if is_liked else 'did not like'} review {obj.id}")
+            return is_liked
+        return False
     
     # 05.21,21:36, 이하상동
     def get_comment_count(self, obj):
@@ -115,11 +136,13 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     # 원본 comments 필드
     # comments = CommentDetailSerializer(many=True, read_only=True, source='comment_set')
     comments = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Review
-        fields = ['id', 'content', 'rating', 'likes_count', 'created_at', 'updated_at', 'authorInfo', 'movieInfo', 'comments']
+        fields = ['id', 'content', 'rating', 'likes_count', 'is_liked', 'created_at', 'updated_at', 'authorInfo', 'movieInfo', 'comments']
 
     def get_authorInfo(self, obj):
         return {
@@ -131,6 +154,12 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.count()
     
+    def get_is_liked(self, obj):
+        request = self.context.get('request', None)
+        if request and request.user.is_authenticated:
+            return request.user in obj.likes.all()
+        return False
+
     def get_comments(self, obj):
         comments = obj.comments.all()
         return CommentDetailSerializer(comments, many=True).data

@@ -34,7 +34,8 @@ def movie_detail(request,movie_pk):
     # 원본
     # movie= Movie.objects.get(pk=movie_pk)
     movie = get_object_or_404(Movie, pk=movie_pk)
-    serializer = MovieDetailSerializer(movie)
+    serializer = MovieDetailSerializer(movie, context={'request': request})
+    # serializer = MovieDetailSerializer(movie)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -46,7 +47,8 @@ def review_list(request, movie_pk):
     # 원본 코드
     # reviews = Review.objects.all()
     reviews = Review.objects.filter(movie=movie)
-    serializer = ReviewListSerializer(reviews, many=True)
+    # serializer = ReviewListSerializer(reviews, many=True)
+    serializer = ReviewListSerializer(reviews, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -69,7 +71,8 @@ def create_review(request, movie_pk):
 def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
     if request.method == 'GET':
-        serializer = ReviewDetailSerializer(review)
+        # serializer = ReviewDetailSerializer(review)
+        serializer = ReviewDetailSerializer(review, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
