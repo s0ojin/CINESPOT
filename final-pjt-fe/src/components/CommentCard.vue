@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div v-if="comments.length === 0" class="text-center py-10">아직 댓글 없습니다...😔<br /></div>
     <div v-for="(comment, idx) in comments" :key="comment.id" class="mb-4 relative">
       <div class="flex gap-4 items-start px-2">
         <img src="https://via.placeholder.com/50" alt="Commenter Avatar" class="h-8 w-8 rounded-full" />
@@ -29,7 +30,7 @@
         <p class="mb-4">정말 댓글을 삭제할까요?</p>
         <div class="flex gap-2 w-full">
           <button @click="hideModal" class="py-2 w-full bg-slate-200 rounded">취소</button>
-          <button @click="deleteComment" class="py-2 w-full bg-red-500 text-white rounded">삭제</button>
+          <button @click="handleDeleteComment" class="py-2 w-full bg-red-500 text-white rounded">삭제</button>
         </div>
       </div>
     </div>
@@ -39,6 +40,9 @@
 <script setup>
 import { ref } from 'vue'
 import { getConvertedTime } from '@/utils/convertTime.js'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { deleteComment } from '@/apis/reviewApi'
+import { useRoute } from 'vue-router'
 
 defineProps({
   comments: {
@@ -46,11 +50,24 @@ defineProps({
     required: true
   }
 })
+const queryClient = useQueryClient()
+const route = useRoute()
+const reviewId = route.params.reviewId
+
+const commentMutation = useMutation({
+  mutationFn: (commentId) => deleteComment(commentId),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['reviewDetail', reviewId])
+  },
+  onError: (error) => {
+    alert('댓글 삭제 실패:', error)
+  }
+})
 
 const isDropdownVisible = ref(false)
 const activeCommentId = ref(null)
 const isModalVisible = ref(false)
-const commentToDelete = ref(null)
+const targetCommentId = ref(null)
 
 const toggleDropdown = (commentId) => {
   if (activeCommentId.value === commentId) {
@@ -62,19 +79,19 @@ const toggleDropdown = (commentId) => {
 }
 
 const confirmDelete = (commentId) => {
-  commentToDelete.value = commentId
+  targetCommentId.value = commentId
   isDropdownVisible.value = false
   isModalVisible.value = true
 }
 
 const hideModal = () => {
   isModalVisible.value = false
-  commentToDelete.value = null
+  targetCommentId.value = null
 }
 
-const deleteComment = () => {
-  if (commentToDelete.value !== null) {
-    // props.comments = props.comments.filter((comment) => comment.id !== commentToDelete.value)
+const handleDeleteComment = () => {
+  if (targetCommentId.value !== null) {
+    commentMutation.mutate(targetCommentId.value)
     hideModal()
   }
 }

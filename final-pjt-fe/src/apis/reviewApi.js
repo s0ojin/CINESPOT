@@ -15,3 +15,7 @@ export const getReviewDetail = (reviewId) => {
 export const postCreateComment = (reviewId, commentData) => {
   return privateApi.post(`/api/v1/reviews/${reviewId}/comments/`, commentData)
 }
+
+export const deleteComment = (commentId) => {
+  return privateApi.delete(`/api/v1/comments/${commentId}/`)
+}
