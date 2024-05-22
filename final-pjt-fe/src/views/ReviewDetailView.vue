@@ -118,13 +118,14 @@ import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import { useRoute, useRouter } from 'vue-router'
 import CommentCard from '@/components/CommentCard.vue'
 import { getConvertedTime } from '@/utils/convertTime.js'
-import { useQuery } from '@tanstack/vue-query'
-import { getReviewDetail } from '@/apis/reviewApi'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
+import { getReviewDetail, postCreateComment } from '@/apis/reviewApi'
 import { getStarStatus } from '@/utils/getStarStatus'
 
 const router = useRouter()
 const route = useRoute()
 const reviewId = route.params.reviewId
+const queryClient = useQueryClient()
 
 const {
   data: review,
@@ -133,6 +134,16 @@ const {
 } = useQuery({
   queryKey: ['reviewDetail', reviewId],
   queryFn: () => getReviewDetail(reviewId).then((res) => res.data)
+})
+
+const commentMutation = useMutation({
+  mutationFn: (commentData) => postCreateComment(reviewId, commentData),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['reviewDetail', reviewId])
+  },
+  onError: (error) => {
+    alert('댓글 생성 실패:', error)
+  }
 })
 
 const likes = ref(review.value?.likes_count)
@@ -146,11 +157,7 @@ const toggleLike = () => {
 
 const addComment = () => {
   if (newComment.value.trim()) {
-    review.value.comments.push({
-      id: review.value.comments.length + 1,
-      author: 'New User', // 실제로는 로그인된 사용자 정보 사용
-      content: newComment.value.trim()
-    })
+    commentMutation.mutate({ content: newComment.value })
     newComment.value = ''
   }
 }

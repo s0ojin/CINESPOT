@@ -5,7 +5,7 @@
         <img src="https://via.placeholder.com/50" alt="Commenter Avatar" class="h-8 w-8 rounded-full" />
         <div class="flex-1">
           <div class="flex justify-between items-end mb-2">
-            <p class="font-semibold">{{ comment.author }}</p>
+            <p class="font-semibold">{{ comment.authorInfo.author }}</p>
             <p class="text-sm text-slate-500">{{ getConvertedTime(comment.created_at) }}</p>
           </div>
           <p class="text-gray-800">{{ comment.content }}</p>

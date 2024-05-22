@@ -11,3 +11,7 @@ export const getMovieReviewList = (movieId) => {
 export const getReviewDetail = (reviewId) => {
   return publicApi.get(`/api/v1/reviews/${reviewId}/review_detail/`)
 }
+
+export const postCreateComment = (reviewId, commentData) => {
+  return privateApi.post(`/api/v1/reviews/${reviewId}/comments/`, commentData)
+}
