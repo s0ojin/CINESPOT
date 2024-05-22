@@ -5,6 +5,7 @@ import SignUpView from '@/views/SignUpView.vue'
 import SignInView from '@/views/SignInView.vue'
 import MypageView from '@/views/MypageView.vue'
 import ReviewDetailView from '@/views/ReviewDetailView.vue'
+import ReviewListView from '@/views/ReviewListView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       name: 'movieDetail',
       component: MovieDetailView,
       meta: { noContainer: true }
+    },
+    {
+      path: '/movies/:movieId/reviews',
+      name: 'movieReviewList',
+      component: ReviewListView
     },
     {
       path: '/signup',

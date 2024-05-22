@@ -46,7 +46,9 @@
             <h2 class="text-2xl font-bold">
               리뷰 <span class="font-normal text-primary-500 ml-1">{{ detailInfo.review_set.length }}개</span>
             </h2>
-            <button class="text-slate-700">더보기</button>
+            <RouterLink :to="{ name: 'movieReviewList', params: { movieId: detailInfo.id } }" class="text-slate-700"
+              >더보기</RouterLink
+            >
           </div>
 
           <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
@@ -90,7 +92,7 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovieDetails, getSimilarMovies } from '@/apis/movieApi'
 import reviewCard from '@/components/reviewCard.vue'
