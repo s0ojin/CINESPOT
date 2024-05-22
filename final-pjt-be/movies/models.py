@@ -34,20 +34,25 @@ class Review(models.Model): ## 우리의 게시글 커뮤니티
     # def __str__(self):
     #     return self.title
 
+
 class Movie_likes_users(models.Model):
     # movie = models.ForeignKey(Movie, on_delete=models.CASCADE) # 원본
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='liked_movie')
 
+
 class Review_likes_users(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='liked_review')
+
+
 
 class Comment(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)   
     
     def __str__(self):
         return self.content
