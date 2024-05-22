@@ -22,7 +22,7 @@
           <span class="leading-3">.</span>
           <span>{{ movie.runtime }}분</span>
         </div>
-        <p class="flex-1 mt-4">{{ movie.overview }}</p>
+        <p class="flex-1 mt-4">{{ movie.overview.slice(0, 412) }}...</p>
         <div class="flex gap-2 flex-wrap text-sm mt-auto">
           <span v-for="genre in movie.genre_ids" :key="genre.id" class="border py-1 px-2 rounded-2xl">{{
             genre.name

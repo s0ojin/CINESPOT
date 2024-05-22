@@ -7,3 +7,7 @@ export const postCreateReview = (movieId, reviewData) => {
 export const getMovieReviewList = (movieId) => {
   return publicApi.get(`/api/v1/movies/${movieId}/review_list/`)
 }
+
+export const getReviewDetail = (reviewId) => {
+  return publicApi.get(`/api/v1/reviews/${reviewId}/review_detail/`)
+}
