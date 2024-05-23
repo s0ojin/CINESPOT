@@ -6,6 +6,16 @@
       <div class="absolute top-2 left-2 text-xl w-7 text-center rounded-md text-white bg-slate-800/70">
         {{ props.idx }}
       </div>
+
+      <i
+        v-if="movie.is_liked === false || movie.is_liked === true"
+        @click.prevent.stop="toggleLike(movie.id)"
+        :class="[
+          'absolute bottom-3 right-3 pi pi-bookmark-fill text-2xl text-gray-100 hover:text-primary-500',
+          movie.is_liked && 'text-primary-500'
+        ]"
+      ></i>
+
       <img
         :src="`https://image.tmdb.org/t/p/w500${movie.poster_path}`"
         alt="Poster"
@@ -25,8 +35,12 @@
 
 <script setup>
 import { getCountryNameInKorean } from '@/utils/convertCountryName'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { computed, defineProps } from 'vue'
 import { useRouter } from 'vue-router'
+import { postMovieLike } from '@/apis/movieApi'
+
+const queryClient = useQueryClient()
 
 const props = defineProps({
   movie: {
@@ -49,5 +63,24 @@ const koreanCountryName = computed(() => {
 const router = useRouter()
 const goToDetail = () => {
   router.push({ name: 'movieDetail', params: { movieId: props.movie.id } })
+}
+
+const movieLikeMutation = useMutation({
+  mutationFn: (movieId) => postMovieLike(movieId),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['movies'])
+  },
+  onError: (err) => {
+    if (err.response.status === 403) {
+      alert('자신의 리뷰에 좋아요를 누를 수 없어요!😜')
+    }
+    if (err.response.status === 401) {
+      alert('로그인 후 좋아요 기능을 이용할 수 있어요!🧐')
+    }
+  }
+})
+
+const toggleLike = (movieId) => {
+  movieLikeMutation.mutate(movieId)
 }
 </script>
