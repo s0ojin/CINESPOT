@@ -77,10 +77,16 @@
           <p class="text-slate-800 pb-8">{{ review.content }}</p>
 
           <div class="flex justify-end mt-2 items-center gap-4 text-slate-700">
-            <div @click="toggleLike">
-              <!-- <i :class="[liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up']"></i> -->
+            <button @click="toggleLike">
+              <i
+                :class="[
+                  'pi',
+                  review.is_liked ? 'pi-thumbs-up-fill' : 'pi-thumbs-up',
+                  review.is_liked && 'text-primary-500'
+                ]"
+              ></i>
               <span class="ml-2">{{ review.likes_count }}</span>
-            </div>
+            </button>
             <div>
               <i class="pi pi-comment"></i>
               <span class="ml-1">{{ review.comments.length }}</span>
@@ -129,7 +135,7 @@ import { useRoute, useRouter } from 'vue-router'
 import CommentCard from '@/components/CommentCard.vue'
 import { getConvertedTime } from '@/utils/convertTime.js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { deleteReview, getReviewDetail, postCreateComment } from '@/apis/reviewApi'
+import { deleteReview, getReviewDetail, postCreateComment, postReviewLike } from '@/apis/reviewApi'
 import { getStarStatus } from '@/utils/getStarStatus'
 
 const router = useRouter()
@@ -166,13 +172,22 @@ const reviewDeleteMutation = useMutation({
   }
 })
 
-const likes = ref(review.value?.likes_count)
-const liked = ref(false)
+const reviewLikeMutation = useMutation({
+  mutationFn: (reviewId) => postReviewLike(reviewId),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['reviewDetail', reviewId])
+  },
+  onError: (err) => {
+    if (err.response.status === 403) {
+      alert('자신의 리뷰에 좋아요를 누를 수 없어요!😜')
+    }
+  }
+})
+
 const newComment = ref('')
 
 const toggleLike = () => {
-  liked.value = !liked.value
-  likes.value += liked.value ? 1 : -1
+  reviewLikeMutation.mutate(reviewId)
 }
 
 const addComment = () => {

@@ -27,3 +27,7 @@ export const postCreateComment = (reviewId, commentData) => {
 export const deleteComment = (commentId) => {
   return privateApi.delete(`/api/v1/comments/${commentId}/`)
 }
+
+export const postReviewLike = (reviewId) => {
+  return privateApi.post(`/api/v1/reviews/${reviewId}/like/`)
+}
