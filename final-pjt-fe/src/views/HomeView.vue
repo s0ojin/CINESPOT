@@ -1,10 +1,12 @@
 <template>
-  <!-- <GoogleMap /> -->
-  <div>
-    <div v-if="isLoading">Loading...</div>
-    <div v-if="error">Error: {{ error.message }}</div>
+  <div v-if="isLoading">Loading...</div>
+  <div v-if="error">Error: {{ error.message }}</div>
 
-    <h2 class="p-2 font-semibold text-xl">로맨스를 좋아하는 경령님을 위한 추천영화</h2>
+  <div>
+    <h2 v-if="!authLoading && authData" class="p-2 font-semibold text-xl">
+      {{ authData.userInfo?.username }}님을 위한 추천영화
+    </h2>
+    <h2 v-else-if="!authData" class="p-2 font-semibold text-xl">로그인하고 영화 추천 받아보세요!</h2>
     <div v-if="!isLoading && !error">
       <MovieCarousel :movies="movies" />
     </div>
@@ -33,6 +35,9 @@
 import MovieCarousel from '@/components/MovieCarousel.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovies } from '@/apis/movieApi'
+import { useAuthQuery } from '@/composables/useAuthQuery'
+
+const { data: authData, isLoading: authLoading } = useAuthQuery()
 
 const {
   data: movies,
