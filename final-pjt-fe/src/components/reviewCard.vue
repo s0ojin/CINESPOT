@@ -28,10 +28,16 @@
       </div>
       <p class="mb-auto mt-4">{{ truncatedContent }}</p>
       <div class="flex justify-end mt-2 items-center gap-4 text-slate-700">
-        <div>
-          <i class="pi pi-thumbs-up"></i>
+        <button @click.stop.prevent="toggleLike">
+          <i
+            :class="[
+              'pi',
+              review.is_liked ? 'pi-thumbs-up-fill' : 'pi-thumbs-up',
+              review.is_liked && 'text-primary-500'
+            ]"
+          ></i>
           <span class="ml-2">{{ review.like_count }}</span>
-        </div>
+        </button>
         <div>
           <i class="pi pi-comment"></i>
           <span class="ml-1">{{ review.comment_count }}</span>
@@ -44,6 +50,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { getStarStatus } from '@/utils/getStarStatus'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { postReviewLike } from '@/apis/reviewApi'
+import { useRoute } from 'vue-router'
 
 const props = defineProps({
   review: Object,
@@ -54,10 +63,29 @@ const props = defineProps({
 })
 
 const contentLimit = ref(props.contentLimit)
+const route = useRoute()
+const movieId = route.params.movieId
+const queryClient = useQueryClient()
 
 const truncatedContent = computed(() => {
   return props.review.content.length > contentLimit.value
     ? props.review.content.slice(0, contentLimit.value) + '...'
     : props.review.content
 })
+
+const reviewLikeMutation = useMutation({
+  mutationFn: (reviewId) => postReviewLike(reviewId),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['movieDetails', movieId])
+  },
+  onError: (err) => {
+    if (err.response.status === 403) {
+      alert('자신의 리뷰에 좋아요를 누를 수 없어요!😜')
+    }
+  }
+})
+
+const toggleLike = () => {
+  reviewLikeMutation.mutate(props.review.id)
+}
 </script>
