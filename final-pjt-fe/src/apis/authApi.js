@@ -28,3 +28,11 @@ export const postSignUp = ({ username, password1, password2 }) => {
 export const postSignIn = ({ username, password }) => {
   return publicApi.post('/accounts/login/', { username, password })
 }
+
+export const getUserInfo = () => {
+  return privateApi.get(`/accounts/user_info/`)
+}
+
+export const getMypageInfo = () => {
+  return privateApi.get(`/accounts/my_page/`)
+}

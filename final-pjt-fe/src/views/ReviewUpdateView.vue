@@ -83,8 +83,13 @@ const mutation = useMutation({
     alert('리뷰수정이 완료되었습니다')
     router.push({ name: 'reviewDetail', params: { reviewId: data.data.id } })
   },
-  onError: (error) => {
-    alert('리뷰 생성 실패:', error)
+  onError: (err) => {
+    if (err.response.status === 401) {
+      alert('로그인 후 이용해주세용!!!!!😣')
+    }
+    if (err.response.status === 403) {
+      alert('내가 쓴 글이 아닙니다!!!!!😣')
+    }
   }
 })
 
