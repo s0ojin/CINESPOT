@@ -9,7 +9,8 @@ django.setup()
 
 from django.conf import settings
 from movies.models import Movie
-
+    
+# 장르 정보
 def fetch_genres():
     api_key = settings.TMDB_API_KEY
     # genres_url = f'https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language=en-US'
@@ -23,6 +24,7 @@ def fetch_genres():
         print(f'Failed to fetch genres: {response.status_code}')
         return {}
 
+# 영화 정보
 def fetch_movie_data(movie_id, genre_dict):
     api_key = settings.TMDB_API_KEY
     movie_url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}&language=ko-KR'
@@ -40,6 +42,15 @@ def fetch_movie_data(movie_id, genre_dict):
         # Convert genres field to genre_ids
         movie_data['genre_ids'] = [genre['id'] for genre in movie_data.get('genres', [])]
         movie_data['genres'] = [genre_dict[genre['id']] for genre in movie_data.get('genres', [])]
+        
+        # # Remove 'adult' field if exists
+        # if 'adult' in movie_data:
+        #     del movie_data['adult']
+            
+        # Remove 'adult' and 'belongs_to_collection' fields if exist
+        movie_data.pop('adult', None)
+        movie_data.pop('belongs_to_collection', None)
+            
         return movie_data
     else:
         print(f'Failed to fetch movie data for movie ID {movie_id}:', movie_response.status_code, images_response.status_code)
@@ -59,6 +70,8 @@ def save_movie_data_to_db(movie_data):
             'production_countries': movie_data.get('production_countries', []),
             'still_cut_paths': movie_data.get('still_cut_paths', []),
             'runtime': movie_data.get('runtime', None),
+            'vote_average': movie_data.get('vote_average', None),
+            'popularity': movie_data.get('popularity', None),
         }
     )
     return movie
@@ -84,7 +97,7 @@ if __name__ == "__main__":
     movies_data = []
     movie_id = 1
 
-    while len(movies_data) < 50:
+    while len(movies_data) < 20:
         movie_data = fetch_movie_data(movie_id, genre_dict)
         if movie_data:
             movie = save_movie_data_to_db(movie_data)
