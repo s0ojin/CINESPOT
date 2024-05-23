@@ -68,23 +68,28 @@ def create_review(request, movie_pk):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
     if request.method == 'GET':
-        # serializer = ReviewDetailSerializer(review)
         serializer = ReviewDetailSerializer(review, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
-        serializer = ReviewDetailSerializer(review, data=request.data)
+        if request.user != review.user:
+            return Response({'detail': 'You do not have permission to edit this review.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ReviewDetailSerializer(review, data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         
     elif request.method == 'DELETE':
+        if request.user != review.user:
+            return Response({'detail': 'You do not have permission to delete this review.'}, status=status.HTTP_403_FORBIDDEN)
+        
         review.delete()
         return Response({'message': f'review {review_pk} is deleted.'}, status=status.HTTP_204_NO_CONTENT)
-
 
     
 # 영화 좋아요
