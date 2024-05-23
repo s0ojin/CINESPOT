@@ -46,7 +46,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     # review_set = ReviewListSerializer(read_only=True, many=True) #원본
     # 05.22, 00:10, 영화 상세에는 달린 리뷰 6개만 보이기
     review_set = serializers.SerializerMethodField() #원본
-    is_liked = serializers.SerializerMethodField()
+    # is_liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
@@ -56,13 +56,14 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     # get_review_set(self, obj) 오버라이드해서 첫 6개 리뷰만 반환
     def get_review_set(self, obj):
         reviews = obj.review_set.all()[:6]
-        return ReviewListSerializer(reviews, many=True).data
+        context = self.context  # context를 전달하기 위해 추가
+        return ReviewListSerializer(reviews, many=True, context=context).data
     
-    def get_is_liked(self, obj):
-        request = self.context.get('request', None)
-        if request and request.user.is_authenticated:
-            return request.user in obj.liked_movies.all()
-        return False
+    # def get_is_liked(self, obj):
+    #     request = self.context.get('request', None)
+    #     if request and request.user.is_authenticated:
+    #         return request.user in obj.liked_movies.all()
+    #     return False
 
 
 class ReviewListSerializer(serializers.ModelSerializer):
