@@ -47,7 +47,8 @@ const router = createRouter({
     {
       path: '/reviews/:reviewId/edit',
       name: 'reviewUpdate',
-      component: ReviewUpdateView
+      component: ReviewUpdateView,
+      meta: { authRequired: true }
     },
     {
       path: '/mypage',
