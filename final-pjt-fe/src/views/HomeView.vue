@@ -7,7 +7,7 @@
       {{ authData.userInfo?.username }}님을 위한 추천영화
     </h2>
     <h2 v-else-if="!authData" class="p-2 font-semibold text-xl">로그인하고 영화 추천 받아보세요!</h2>
-    <div v-if="!rocommendLoading && !recommendError && recommendMovies">
+    <div v-if="!recommendLoading && !recommendError && recommendMovies">
       <MovieCarousel :movies="recommendMovies" :is-like-base-recommend="true" />
     </div>
   </div>
@@ -26,7 +26,9 @@
 
     <h2 class="p-2 font-semibold text-xl">현재 인기있는 영화</h2>
     <div v-if="!isLoading && !error">
-      <MovieCarousel :movies="movies" />
+      <div v-if="!popularLoading && !popularError && popularMovies">
+        <MovieCarousel :movies="popularMovies" />
+      </div>
     </div>
   </div>
 </template>
@@ -34,7 +36,7 @@
 <script setup>
 import MovieCarousel from '@/components/MovieCarousel.vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getMovies, getRecommendMovies } from '@/apis/movieApi'
+import { getMovies, getRecommendMovies, getPopularMovies } from '@/apis/movieApi'
 import { useAuthQuery } from '@/composables/useAuthQuery'
 
 const { data: authData, isLoading: authLoading } = useAuthQuery()
@@ -51,9 +53,18 @@ const {
 const {
   data: recommendMovies,
   error: recommendError,
-  isLoading: rocommendLoading
+  isLoading: recommendLoading
 } = useQuery({
   queryKey: ['recommend'],
   queryFn: () => getRecommendMovies().then((res) => res.data.movie_recommendations)
+})
+
+const {
+  data: popularMovies,
+  error: popularError,
+  isLoading: popularLoading
+} = useQuery({
+  queryKey: ['movies', 'popular'],
+  queryFn: () => getPopularMovies().then((res) => res.data.movie_recommendations)
 })
 </script>
