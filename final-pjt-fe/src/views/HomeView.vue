@@ -6,7 +6,7 @@
 
     <h2 class="p-2 font-semibold text-xl">로맨스를 좋아하는 경령님을 위한 추천영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="movies" />
+      <MovieCarousel :movies="movies" />
     </div>
   </div>
   <div>
@@ -15,7 +15,7 @@
 
     <h2 class="p-2 font-semibold text-xl">오늘 날씨와 어울리는 추천영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="movies" />
+      <MovieCarousel :movies="movies" />
     </div>
   </div>
   <div>
@@ -24,13 +24,13 @@
 
     <h2 class="p-2 font-semibold text-xl">현재 인기있는 영화</h2>
     <div v-if="!isLoading && !error">
-      <Carousel :movies="movies" />
+      <MovieCarousel :movies="movies" />
     </div>
   </div>
 </template>
 
 <script setup>
-import Carousel from '@/components/Carousel.vue'
+import MovieCarousel from '@/components/MovieCarousel.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovies } from '@/apis/movieApi'
 

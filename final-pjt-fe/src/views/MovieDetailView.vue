@@ -13,9 +13,13 @@
         <div class="max-w-screen-xl mx-auto">
           <div class="absolute bottom-10 text-white">
             <h1 class="text-3xl font-bold mb-4">{{ detailInfo.title }}</h1>
-            <p class="mb-2">{{ detailInfo.release_date }}</p>
+            <div>
+              <span class="mb-2 mr-2">{{ detailInfo.release_date }}</span>
+              <span>{{ getCountryNameInKorean(detailInfo.production_countries[0].iso_3166_1) }}</span>
+            </div>
+            <span>{{ detailInfo.runtime }} 분</span>
             <div class="flex gap-2 flex-wrap">
-              <span v-for="genre in detailInfo.genres" :key="genre.id">{{ genre.name }}</span>
+              <span v-for="(genre, idx) in detailInfo.genres" :key="idx">{{ genre }}</span>
             </div>
           </div>
         </div>
@@ -27,14 +31,15 @@
             alt="Poster"
             class="h-96 object-cover border rounded-md"
           />
-          <div>
-            <p class="mb-4">
+          <div class="flex-1">
+            <p class="mb-6">
               <strong class="block">줄거리</strong>
               <span v-if="detailInfo.overview">
                 {{ detailInfo.overview }}
               </span>
               <span v-else> 줄거리가 없지만 줄거리 없이 보는 맛이 있어요😏</span>
             </p>
+            <CreateReview />
           </div>
         </section>
         <section>
@@ -42,10 +47,12 @@
             <h2 class="text-2xl font-bold">
               리뷰 <span class="font-normal text-primary-500 ml-1">{{ detailInfo.review_set.length }}개</span>
             </h2>
-            <button class="text-slate-700">더보기</button>
+            <button v-if="detailInfo.review_set.length > 0" @click="goToReviewList" class="text-slate-700">
+              더보기
+            </button>
           </div>
 
-          <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+          <div v-if="detailInfo.review_set.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div v-for="review in detailInfo.review_set" :key="review.id">
               <reviewCard :review="review" />
             </div>
@@ -56,27 +63,28 @@
           </div>
         </section>
         <section>
-          <h2 class="text-2xl font-bold p-2">스틸컷</h2>
-          <div class="flex gap-2 overflow-hidden">
-            <div v-if="detailInfo.still_cut_paths.length > 0">
-              <div v-for="(image, index) in detailInfo.still_cut_paths" :key="index">
-                <img :src="`https://image.tmdb.org/t/p/w500/${image}`" alt="still_cut" />
-              </div>
+          <h2 class="text-2xl font-bold p-2">갤러리</h2>
+          <div class="flex">
+            <div class="overflow-x-auto whitespace-nowrap py-2 px-4">
+              <img
+                v-for="(image, idx) in detailInfo.still_cut_paths"
+                :key="idx"
+                :src="`https://image.tmdb.org/t/p/w500/${image}`"
+                class="inline-block mr-4 h-48"
+                alt="Image"
+              />
             </div>
-            <div v-else class="mx-auto py-10">영화 이미지가 존재하지 않습니다😫</div>
           </div>
         </section>
         <section>
           <h2 class="text-2xl font-bold p-2">
             <span>< {{ detailInfo.title }} ></span>과 비슷한 영화들 추천드려요!
           </h2>
-          <div v-if="!similarLoading">
-            <div v-if="similarMovies.length > 0">
-              <Carousel :movies="similarMovies" />
-            </div>
-            <div v-else class="text-center py-10">
-              비슷한 영화가 없네요...😔 <br />매우 특별한 영화라고 할 수 있습니다ㅎ
-            </div>
+          <div v-if="!similarLoading && !similarError && similarMovies.length > 0">
+            <MovieCarousel :movies="similarMovies" />
+          </div>
+          <div v-else class="text-center py-10">
+            비슷한 영화가 없네요...😔 <br />매우 특별한 영화라고 할 수 있습니다ㅎ
           </div>
         </section>
       </div>
@@ -85,13 +93,16 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { getMovieDetails, getSimilarMovies } from '@/apis/movieApi'
+import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import reviewCard from '@/components/reviewCard.vue'
-import Carousel from '@/components/Carousel.vue'
+import MovieCarousel from '@/components/MovieCarousel.vue'
+import CreateReview from '@/components/CreateReview.vue'
 
 const route = useRoute()
+const router = useRouter()
 const movieId = route.params.movieId
 
 const {
@@ -103,8 +114,19 @@ const {
   queryFn: () => getMovieDetails(movieId).then((res) => res.data)
 })
 
-const { data: similarMovies, isLoading: similarLoading } = useQuery({
-  queryKey: ['similarMovies', movieId],
+const {
+  data: similarMovies,
+  error: similarError,
+  isLoading: similarLoading
+} = useQuery({
+  queryKey: ['similarMovies'],
   queryFn: () => getSimilarMovies(movieId).then((res) => res.data.results)
 })
+
+const goToReviewList = () => {
+  router.push({
+    name: 'movieReviewList',
+    params: { movieId: detailInfo.id }
+  })
+}
 </script>

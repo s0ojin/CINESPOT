@@ -4,6 +4,9 @@ import MovieDetailView from '@/views/MovieDetailView.vue'
 import SignUpView from '@/views/SignUpView.vue'
 import SignInView from '@/views/SignInView.vue'
 import MypageView from '@/views/MypageView.vue'
+import ReviewDetailView from '@/views/ReviewDetailView.vue'
+import ReviewListView from '@/views/ReviewListView.vue'
+import ReviewUpdateView from '@/views/ReviewUpdateView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +23,11 @@ const router = createRouter({
       meta: { noContainer: true }
     },
     {
+      path: '/movies/:movieId/reviews',
+      name: 'movieReviewList',
+      component: ReviewListView
+    },
+    {
       path: '/signup',
       name: 'signup',
       component: SignUpView,
@@ -30,6 +38,16 @@ const router = createRouter({
       name: 'signin',
       component: SignInView,
       meta: { noContainer: true, logoutRequired: true }
+    },
+    {
+      path: '/reviews/:reviewId',
+      name: 'reviewDetail',
+      component: ReviewDetailView
+    },
+    {
+      path: '/reviews/:reviewId/edit',
+      name: 'reviewUpdate',
+      component: ReviewUpdateView
     },
     {
       path: '/mypage',
