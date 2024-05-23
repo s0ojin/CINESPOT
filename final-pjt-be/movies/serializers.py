@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Movie, Review, Comment
+from .models import Movie, Review, Comment, Review_likes_users
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from .utils import get_user_profile_image
 
 # 설정된 로거 가져오기 (앱 이름을 'myapp'으로 가정)
-import logging
-logger = logging.getLogger('myapp')
+# import logging
+# logger = logging.getLogger('movies')
 
 
 User = get_user_model()
@@ -50,7 +50,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'is_liked', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
+        fields = ['id', 'title', 'overview','poster_path', 'backdrop_path', 'release_date', 'production_countries', 'runtime', 'genres', 'still_cut_paths', 'review_set']
         # fields = '__all__' 
     # 05.22, 00:10,
     # get_review_set(self, obj) 오버라이드해서 첫 6개 리뷰만 반환
@@ -77,8 +77,7 @@ class ReviewListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
-        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count', 'like_count','is_liked'] # 추가할거 작성자 프로필 사진 경로, 댓글 수
-        # fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'movie', 'user', 'like_count', 'rating']
+        fields = ['id', 'user', 'userprofile', 'content', 'rating','comment_count', 'like_count','is_liked']
 
     def get_user(self, obj):
         return obj.user.username
@@ -90,10 +89,7 @@ class ReviewListSerializer(serializers.ModelSerializer):
     def get_is_liked(self, obj):
         request = self.context.get('request', None)
         if request and request.user.is_authenticated:
-            # return request.user in obj.likes.all()
-            is_liked = request.user in obj.likes.all()
-            logger.debug(f"User {request.user.username} {'liked' if is_liked else 'did not like'} review {obj.id}")
-            return is_liked
+            return Review_likes_users.objects.filter(review=obj, user=request.user).exists()
         return False
     
     # 05.21,21:36, 이하상동
@@ -157,7 +153,7 @@ class ReviewDetailSerializer(serializers.ModelSerializer):
     def get_is_liked(self, obj):
         request = self.context.get('request', None)
         if request and request.user.is_authenticated:
-            return request.user in obj.likes.all()
+            return Review_likes_users.objects.filter(review=obj, user=request.user).exists()
         return False
 
     def get_comments(self, obj):
