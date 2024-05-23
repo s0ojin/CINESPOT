@@ -16,7 +16,7 @@
           class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10"
         >
           <ul>
-            <li @click="confirmDelete(review.id)" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">삭제하기</li>
+            <li @click="confirmDelete" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">삭제하기</li>
             <li @click="goToReviewEdit" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">수정하기</li>
           </ul>
         </div>
@@ -113,7 +113,7 @@
             <p class="mb-4">정말 리뷰를 삭제할까요?</p>
             <div class="flex gap-2 w-full">
               <button @click="hideDeleteModal" class="py-2 w-full bg-slate-200 rounded">취소</button>
-              <button @click="deleteReview" class="py-2 w-full bg-red-500 text-white rounded">삭제</button>
+              <button @click="handleDeleteReview" class="py-2 w-full bg-red-500 text-white rounded">삭제</button>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ import { useRoute, useRouter } from 'vue-router'
 import CommentCard from '@/components/CommentCard.vue'
 import { getConvertedTime } from '@/utils/convertTime.js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { getReviewDetail, postCreateComment } from '@/apis/reviewApi'
+import { deleteReview, getReviewDetail, postCreateComment } from '@/apis/reviewApi'
 import { getStarStatus } from '@/utils/getStarStatus'
 
 const router = useRouter()
@@ -156,6 +156,16 @@ const commentMutation = useMutation({
   }
 })
 
+const reviewDeleteMutation = useMutation({
+  mutationFn: (reviewId) => deleteReview(reviewId),
+  onSuccess: () => {
+    alert('리뷰가 삭제되었습니다.')
+    router.push({ name: 'movieReviewList', params: { movieId: review.value.movieInfo.id } })
+    queryClient.invalidateQueries(['movieDetails', review.value.movieInfo.id])
+    queryClient.invalidateQueries(['movieReviews'])
+  }
+})
+
 const likes = ref(review.value?.likes_count)
 const liked = ref(false)
 const newComment = ref('')
@@ -178,28 +188,22 @@ const handleToMovieDetail = () => {
 
 const isDropdownVisible = ref(false)
 const isDeleteModalVisible = ref(false)
-const selectedReviewId = ref(null)
 
 const toggleDropdown = (boolean) => {
   isDropdownVisible.value = boolean
 }
 
-const deleteReview = () => {
-  if (selectedReviewId.value !== null) {
-    // props.comments = props.comments.filter((comment) => comment.id !== commentToDelete.value)
-    hideDeleteModal()
-  }
+const handleDeleteReview = () => {
+  reviewDeleteMutation.mutate(reviewId)
 }
 
-const confirmDelete = (reviewId) => {
-  selectedReviewId.value = reviewId
+const confirmDelete = () => {
   isDropdownVisible.value = false
   isDeleteModalVisible.value = true
 }
 
 const hideDeleteModal = () => {
   isDeleteModalVisible.value = false
-  selectedReviewId.value = null
 }
 
 const goToReviewEdit = () => {
