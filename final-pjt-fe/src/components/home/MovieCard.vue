@@ -16,7 +16,7 @@
       <h3>{{ movie.title }}</h3>
       <div class="flex gap-2 text-sm text-slate-700">
         <p>{{ movie.release_date.split('-')[0] }}</p>
-        <p class="leading-3">.</p>
+        <p v-if="koreanCountryName" class="leading-3">.</p>
         <p>{{ koreanCountryName }}</p>
       </div>
     </div>
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { getCountryNameInKorean } from '@/utils/convertCountyName'
+import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import { computed, defineProps } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -43,7 +43,7 @@ const koreanCountryName = computed(() => {
   if (props.movie.production_countries && props.movie.production_countries.length > 0) {
     return getCountryNameInKorean(props.movie.production_countries[0].iso_3166_1)
   }
-  return '국가 정보 없음'
+  return ''
 })
 
 const router = useRouter()
