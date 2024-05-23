@@ -4,12 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Movie, Review, Review_likes_users, Comment
-from .serializers import MovieSerializer, MovieDetailSerializer
+from .serializers import MovieSerializer, MovieDetailSerializer, MovieRecommendationSerializer
 from .serializers import ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
 from .serializers import CommentSerializer
 from django.contrib.auth import get_user_model
 
-# Create your views here.
+from .recommand import compute_cosine_similarity, personalized_score
 
 @api_view(['GET'])
 def movie_review_list(request, movie_pk):
@@ -24,8 +24,8 @@ def movie_review_list(request, movie_pk):
 def movie_list(request):
     movies = Movie.objects.all()
     # 원본 코드
-    # serializer = MovieSerializer(movies, many=True)
-    serializer = MovieSerializer(movies, many=True, context={'request': request})
+    serializer = MovieSerializer(movies, many=True)
+    # serializer = MovieSerializer(movies, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # 영화 상세 내역 조회 원본 코드
@@ -180,3 +180,88 @@ def comment_detail(request, comment_pk):
         comment = get_object_or_404(Comment, pk=comment_pk)
         comment.delete()
         return Response({'message': 'Comment deleted'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+
+# View for movie recommamdation service
+@api_view(['GET'])
+def genre_recommendations(request):
+   # 현재 로그인한 사용자의 정보 가져오기
+    user = request.user
+
+    if user.is_authenticated:
+        # 사용자가 좋아하는 영화의 장르 정보 가져오기
+        user_liked_genres = [genre for movie in user.liked_movies.all() for genre in movie.genres]
+
+        # 모든 영화의 장르 정보 가져오기
+        all_movies = Movie.objects.exclude(id__in=user.liked_movies.all().values_list('id', flat=True))
+        
+        # 유사도 계산
+        similarities = []
+        for movie in all_movies:
+            similarity = compute_cosine_similarity(user_liked_genres, movie.genres)
+            similarities.append((movie.title, similarity))
+
+        # 유사도에 따라 정렬
+        sorted_similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+        # 상위 10개의 유사한 영화 추출
+        top_similar_movies = sorted_similarities[:10]
+        # print(top_similar_movies)
+
+        # 추천 영화 정보 가져오기
+        recommended_movie_titles = [movie[0] for movie in top_similar_movies]
+        recommended_movies = []
+        for title in recommended_movie_titles:
+            movie = Movie.objects.get(title=title)
+            recommended_movies.append(movie)
+        # 영화 Serializer로 직렬화
+        serializer = MovieSerializer(recommended_movies, many=True)
+
+        # 결과 딕셔너리 구성
+        response_data = {
+            "user_liked_genres": user_liked_genres,
+            "similarity_res": {movie[0]: movie[1] for movie in top_similar_movies},
+            "movie_recommendations": serializer.data
+        }
+
+        return Response(response_data)
+    else:
+        return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+# 인기도 + 평점 기반 추천
+@api_view(['GET'])
+def popul_vote_recommend(request):
+    user = request.user
+
+    if user.is_authenticated:
+        user_preference = {
+            'popularity_weight': float(request.GET.get('popularity_weight', 0.9)),
+            'vote_average_weight': float(request.GET.get('vote_average_weight', 0.1))
+        }
+
+        # 데이터베이스에서 모든 영화 가져오기
+        movies = Movie.objects.all()
+        scored_movies = []
+        print('popularity_weight','vote_average_weight')
+        for movie in movies:
+            score = personalized_score(movie, user_preference['popularity_weight'], user_preference['vote_average_weight'])
+            scored_movies.append((movie.title, score, movie))
+
+        scored_movies.sort(key=lambda x: x[1], reverse=True)
+        top_scored_movies = scored_movies[:10]
+
+        recommended_movies = [movie[2] for movie in top_scored_movies]
+        
+        # 영화 Serializer로 직렬화
+        serializer = MovieSerializer(recommended_movies, many=True)
+
+        # 결과 딕셔너리 구성
+        response_data = {
+            "user_preference": user_preference,
+            "movie_recommendations": serializer.data
+        }
+
+        return Response(response_data)
+    else:
+        return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)

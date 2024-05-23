@@ -16,7 +16,10 @@ class Movie(models.Model):
     runtime = models.IntegerField(null=True)  # 런닝 타임 저장(단위:분)
     backdrop_path = models.CharField(max_length=200, null=True)
     liked_movies = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_movies', blank=True)
-
+    similarity_score = models.FloatField(default=0.0)  # 추천을 위한 유사도 저장 필드
+    popularity = models.FloatField(null=True, blank=True)  # 인기도 점수 추가
+    vote_average = models.FloatField(null=True, blank=True)  # 평점 점수 추가
+    
     def __str__(self):
         return self.title
 
