@@ -24,6 +24,8 @@ load_dotenv()
 # API 키 가져오기
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
