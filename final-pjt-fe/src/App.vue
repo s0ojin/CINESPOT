@@ -22,7 +22,7 @@
       <RouterView />
     </div>
     <div v-if="!route.meta.noContainer || route.name === 'movieDetail'">
-      <footer class="h-72 bg-gray-100 pt-10 pb-14 text-slate-500 mt-40 text-sm">
+      <footer class="w-full h-72 bg-gray-100 pt-10 pb-14 text-slate-500 text-sm">
         <div class="h-full max-w-screen-xl mx-auto flex flex-col">
           <div class="flex justify-between h-full">
             <address class="not-italic flex flex-col gap-1">
@@ -75,7 +75,7 @@ const handleScroll = () => {
 }
 
 const containerClass = computed(() => {
-  return route.meta.noContainer ? '' : 'max-w-screen-xl mx-auto pt-16'
+  return route.meta.noContainer ? '' : 'max-w-screen-xl mx-auto py-20 h-auto min-h-[calc(100vh-288px)]'
 })
 
 onMounted(() => {
