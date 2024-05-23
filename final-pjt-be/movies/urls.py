@@ -12,5 +12,6 @@ urlpatterns = [
    path('comments/<int:comment_pk>/', views.comment_detail),# 댓글 수정, 삭제
    path('movies/<int:movie_pk>/like/', views.movie_like_users), # 영화 좋아여 
    path('reviews/<int:review_pk>/like/', views.review_like_users), # 리뷰 좋아여
+   path('recommendations/', views.movie_recommendations), # 영화 추천
 ]
 
