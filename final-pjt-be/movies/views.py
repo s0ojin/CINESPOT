@@ -8,8 +8,11 @@ from .serializers import MovieSerializer, MovieDetailSerializer
 from .serializers import ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
 from .serializers import CommentSerializer
 from django.contrib.auth import get_user_model
-
-# Create your views here.
+	
+#only for recommand system
+from accounts.models import User
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 @api_view(['GET'])
 def movie_review_list(request, movie_pk):
@@ -185,3 +188,92 @@ def comment_detail(request, comment_pk):
         comment = get_object_or_404(Comment, pk=comment_pk)
         comment.delete()
         return Response({'message': 'Comment deleted'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+# only for recommande system
+def compute_cosine_similarity(user_liked_genres, movie_genres):
+    # 유저가 좋아요한 장르를 포함한 모든 장르 리스트
+    all_genres = user_liked_genres + movie_genres
+    
+    # 장르 정보를 벡터 형태로 변환
+    user_vector = [all_genres.count(genre) for genre in set(all_genres)]  # 사용자 장르 벡터
+    movie_vector = [1 if genre in movie_genres else 0 for genre in set(all_genres)]  # 영화 장르 벡터
+
+    # numpy 배열로 변환
+    user_array = np.array(user_vector).reshape(1, -1)  # 사용자 벡터를 행 벡터로 변환
+    movie_array = np.array(movie_vector).reshape(1, -1)  # 영화 벡터를 행 벡터로 변환
+
+    # 코사인 유사도 계산
+    similarity = cosine_similarity(user_array, movie_array)[0][0]
+
+    return similarity
+    
+# 모든 영화의 장르 정보 가져오기
+genres_dict = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Science Fiction",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western"
+}
+
+
+# View for movie recommamdation service
+@api_view(['GET'])
+def movie_recommendations(request):
+   # 현재 로그인한 사용자의 정보 가져오기
+    user = request.user
+
+    if user.is_authenticated:
+        # 사용자가 좋아하는 영화의 장르 정보 가져오기
+        user_liked_genres = [genre for movie in user.liked_movies.all() for genre in movie.genres]
+
+        # 모든 영화의 장르 정보 가져오기
+        all_movies = Movie.objects.exclude(id__in=user.liked_movies.all().values_list('id', flat=True))
+        
+        # 유사도 계산
+        similarities = []
+        for movie in all_movies:
+            similarity = compute_cosine_similarity(user_liked_genres, movie.genres)
+            similarities.append((movie.title, similarity))
+
+        # 유사도에 따라 정렬
+        sorted_similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+        # 상위 10개의 유사한 영화 추출
+        top_similar_movies = sorted_similarities[:10]
+        # print(top_similar_movies)
+
+        # 추천 영화 정보 가져오기
+        recommended_movie_titles = [movie[0] for movie in top_similar_movies]
+        recommended_movies = []
+        for title in recommended_movie_titles:
+            movie = Movie.objects.get(title=title)
+            recommended_movies.append(movie)
+        # 영화 Serializer로 직렬화
+        # serializer = MovieDetailSerializer(recommended_movies, many=True)
+        serializer = MovieSerializer(recommended_movies, many=True)
+
+        # 결과 딕셔너리 구성
+        response_data = {
+            "user_liked_genres": user_liked_genres,
+            "similarity_res": {movie[0]: movie[1] for movie in top_similar_movies},
+            "movie_recommendations": serializer.data
+        }
+
+        return Response(response_data)
+    else:
+        return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
