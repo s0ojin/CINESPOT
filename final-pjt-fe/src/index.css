@@ -16,6 +16,6 @@
     @apply -top-2 bg-white text-sm;
   }
   .submit-btn {
-    @apply h-12 mt-4 bg-primary-500 text-white rounded-full hover:bg-blue-500 transition-colors;
+    @apply h-12 mt-4 bg-primary-500 text-white rounded-full hover:bg-primary-400 transition-colors;
   }
 }
