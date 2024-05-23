@@ -77,9 +77,16 @@
           </div>
         </section>
         <section>
-          <h2 class="text-2xl font-bold p-2">
-            <span>< {{ detailInfo.title }} ></span>과 비슷한 영화들 추천드려요!
-          </h2>
+          <h2 class="text-2xl font-bold p-2">AI가 < {{ detailInfo.title }} > 하면 생각나는 여행지를 추천해드립니다!</h2>
+          <TravelCard
+            destination="로스앤젤레스, 캘리포니아, 미국"
+            reason="아이언맨 3의 많은 장면들이 로스앤젤레스에서 촬영되었습니다. 할리우드 영화의 중심지인 로스앤젤레스는 영화 속에서 토니 스타크의 집과 다양한 액션 장면들이 펼쳐진 곳입니다."
+            address="Hollywood, Los Angeles, CA, USA"
+            image_url="https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcSp0ebixxMGjMybL9AqViasYbUdjPL4Lb8tqFQph5xvGwTWeEkQRUO084-eKVOMIiPHnh58XJ8Sj4fWCdv5RnYq47t72MrZAHPYLbxfyQ"
+          />
+        </section>
+        <section>
+          <h2 class="text-2xl font-bold p-2">< {{ detailInfo.title }} >과 비슷한 영화들 추천드려요!</h2>
           <div v-if="!similarLoading && !similarError && similarMovies.length > 0">
             <MovieCarousel :movies="similarMovies" />
           </div>
@@ -100,6 +107,7 @@ import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import reviewCard from '@/components/reviewCard.vue'
 import MovieCarousel from '@/components/MovieCarousel.vue'
 import CreateReview from '@/components/CreateReview.vue'
+import TravelCard from '@/components/TravelCard.vue'
 
 const route = useRoute()
 const movieId = route.params.movieId
