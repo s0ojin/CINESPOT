@@ -27,3 +27,7 @@ export const getSimilarMovies = (movieId) => {
 export const postMovieLike = (movieId) => {
   return privateApi.post(`/api/v1/movies/${movieId}/like/`)
 }
+
+export const getRecommendMovies = () => {
+  return privateApi.get(`api/v1/genres_recommend/`)
+}
