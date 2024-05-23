@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { postSignIn } from '@/apis/authApi'
+import { getUserInfo, postSignIn } from '@/apis/authApi'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
@@ -43,10 +43,18 @@ const queryClient = useQueryClient()
 
 const signInMutation = useMutation({
   mutationFn: postSignIn,
-  onSuccess: (data) => {
+  onSuccess: async (data) => {
     const token = data.data.key
     localStorage.setItem('token', token)
-    queryClient.setQueryData(['auth'], { token })
+
+    try {
+      const userInfoResponse = await getUserInfo()
+      const userInfo = userInfoResponse.data
+      queryClient.setQueryData(['auth'], { token, userInfo })
+    } catch (err) {
+      console.error('유저정보 가져오기에 실패했습니다.', err)
+    }
+
     alert('로그인 성공!')
     router.push('/')
   },

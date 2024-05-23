@@ -1,6 +1,9 @@
 <template>
   <div class="border p-6 rounded-lg">
-    <h1 class="text-xl mb-1">박경령차영차님 이 작품에 대해 어떻게 생각하세요?</h1>
+    <h1 v-if="!authLoading && authData" class="text-xl mb-1">
+      {{ authData.userInfo.username }}님 이 작품에 대해 어떻게 생각하세요?
+    </h1>
+    <h1 v-else-if="!authData" class="text-xl mb-1">로그인하고 리뷰 남겨보세요!</h1>
     <StarRating v-model="rating" />
     <textarea
       v-model="content"
@@ -17,6 +20,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { postCreateReview } from '@/apis/reviewApi'
 import StarRating from '@/components/StarRating.vue'
+import { useAuthQuery } from '@/composables/useAuthQuery'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,9 +38,13 @@ const mutation = useMutation({
     router.push({ name: 'reviewDetail', params: { reviewId: data.data.id } })
   },
   onError: (error) => {
-    alert('리뷰 생성 실패:', error)
+    if (error.response.status === 401) {
+      alert('로그인하고 리뷰를 남길 수 있어요😖!')
+    } else alert('리뷰 생성 실패:', error)
   }
 })
+
+const { data: authData, isLoading: authLoading } = useAuthQuery()
 
 const handleSubmit = () => {
   const reviewData = {
