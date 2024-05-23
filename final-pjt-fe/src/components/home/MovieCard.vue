@@ -12,7 +12,7 @@
         @click.prevent.stop="toggleLike(movie.id)"
         :class="[
           'absolute bottom-3 right-3 pi pi-bookmark-fill text-2xl text-gray-100 hover:text-primary-500',
-          movie.is_liked && 'text-primary-500'
+          (movie.is_liked || isLiked) && 'text-primary-500'
         ]"
       ></i>
 
@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { getCountryNameInKorean } from '@/utils/convertCountryName'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { computed, defineProps } from 'vue'
@@ -50,8 +51,15 @@ const props = defineProps({
   idx: {
     type: Number,
     required: true
+  },
+  isLikeBaseRecommend: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
+
+const isLiked = ref(false)
 
 const koreanCountryName = computed(() => {
   if (props.movie.production_countries && props.movie.production_countries.length > 0) {
@@ -67,8 +75,19 @@ const goToDetail = () => {
 
 const movieLikeMutation = useMutation({
   mutationFn: (movieId) => postMovieLike(movieId),
-  onSuccess: () => {
-    queryClient.invalidateQueries(['movies'])
+  onSuccess: async (data) => {
+    if (props.isLikeBaseRecommend === true) {
+      isLiked.value = data.data.liked
+    } else {
+      await queryClient.invalidateQueries(
+        {
+          queryKey: ['movies'],
+          exact: false,
+          refetchType: 'active'
+        },
+        { throwOnError: false, cancelRefetch: true }
+      )
+    }
   },
   onError: (err) => {
     if (err.response.status === 403) {

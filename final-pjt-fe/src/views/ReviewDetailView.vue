@@ -157,8 +157,10 @@ const commentMutation = useMutation({
   onSuccess: () => {
     queryClient.invalidateQueries(['reviewDetail', reviewId])
   },
-  onError: (error) => {
-    alert('댓글 생성 실패:', error)
+  onError: (err) => {
+    if (err.response.status === 401) {
+      alert('로그인 후 댓글을 남길 수 있어요!😣')
+    }
   }
 })
 
@@ -169,6 +171,14 @@ const reviewDeleteMutation = useMutation({
     router.push({ name: 'movieReviewList', params: { movieId: review.value.movieInfo.id } })
     queryClient.invalidateQueries(['movieDetails', review.value.movieInfo.id])
     queryClient.invalidateQueries(['movieReviews'])
+  },
+  onError: (err) => {
+    if (err.response.status === 401) {
+      alert('로그인 후 이용해주세용!!!!!😣')
+    }
+    if (err.response.status === 403) {
+      alert('내가 쓴 글이 아닙니다!!!!!😣')
+    }
   }
 })
 
