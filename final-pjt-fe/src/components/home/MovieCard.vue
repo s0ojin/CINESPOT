@@ -82,7 +82,7 @@ const movieLikeMutation = useMutation({
       await queryClient.invalidateQueries(
         {
           queryKey: ['movies'],
-          exact: true,
+          exact: false,
           refetchType: 'active'
         },
         { throwOnError: false, cancelRefetch: true }

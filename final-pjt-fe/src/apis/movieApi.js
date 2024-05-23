@@ -31,3 +31,7 @@ export const postMovieLike = (movieId) => {
 export const getRecommendMovies = () => {
   return privateApi.get(`api/v1/genres_recommend/`)
 }
+
+export const getPopularMovies = () => {
+  return privateApi.get(`api/v1/popul_vote_recommend/`)
+}
