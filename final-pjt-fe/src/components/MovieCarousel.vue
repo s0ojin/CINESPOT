@@ -19,7 +19,12 @@
         :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
       >
         <div v-for="(movie, index) in movies" :key="movie.id" class="flex-shrink-0 p-2 w-1/5">
-          <MovieCard :movie="movie" :idx="index + 1" />
+          <div v-if="isLikeBaseRecommend">
+            <MovieCard :movie="movie" :idx="index + 1" :is-like-base-recommend="true" />
+          </div>
+          <div v-else>
+            <MovieCard :movie="movie" :idx="index + 1" />
+          </div>
         </div>
       </div>
     </div>
@@ -34,6 +39,11 @@ const props = defineProps({
   movies: {
     type: Array,
     required: true
+  },
+  isLikeBaseRecommend: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 
