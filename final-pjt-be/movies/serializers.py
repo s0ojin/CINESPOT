@@ -212,3 +212,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_userprofile(self, obj):
         return get_user_profile_image(obj.user)
+    
+
+# 영화 추천용 시리얼라이저
+class MovieRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = '__all__'  # 모든 필드를 직렬화

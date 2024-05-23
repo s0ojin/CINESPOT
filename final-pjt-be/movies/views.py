@@ -4,15 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Movie, Review, Review_likes_users, Comment
-from .serializers import MovieSerializer, MovieDetailSerializer
+from .serializers import MovieSerializer, MovieDetailSerializer, MovieRecommendationSerializer
 from .serializers import ReviewListSerializer, ReviewDetailSerializer, ReviewGenSerializer
 from .serializers import CommentSerializer
 from django.contrib.auth import get_user_model
-	
-#only for recommand system
-from accounts.models import User
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
+from .recommand import compute_cosine_similarity, personalized_score
 
 @api_view(['GET'])
 def movie_review_list(request, movie_pk):
@@ -27,8 +24,8 @@ def movie_review_list(request, movie_pk):
 def movie_list(request):
     movies = Movie.objects.all()
     # 원본 코드
-    # serializer = MovieSerializer(movies, many=True)
-    serializer = MovieSerializer(movies, many=True, context={'request': request})
+    serializer = MovieSerializer(movies, many=True)
+    # serializer = MovieSerializer(movies, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # 영화 상세 내역 조회 원본 코드
@@ -71,28 +68,23 @@ def create_review(request, movie_pk):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
 def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
     if request.method == 'GET':
+        # serializer = ReviewDetailSerializer(review)
         serializer = ReviewDetailSerializer(review, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
-        if request.user != review.user:
-            return Response({'detail': 'You do not have permission to edit this review.'}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = ReviewDetailSerializer(review, data=request.data, context={'request': request})
+        serializer = ReviewDetailSerializer(review, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         
     elif request.method == 'DELETE':
-        if request.user != review.user:
-            return Response({'detail': 'You do not have permission to delete this review.'}, status=status.HTTP_403_FORBIDDEN)
-        
         review.delete()
         return Response({'message': f'review {review_pk} is deleted.'}, status=status.HTTP_204_NO_CONTENT)
+
 
     
 # 영화 좋아요
@@ -190,51 +182,10 @@ def comment_detail(request, comment_pk):
         return Response({'message': 'Comment deleted'}, status=status.HTTP_204_NO_CONTENT)
     
 
-# only for recommande system
-def compute_cosine_similarity(user_liked_genres, movie_genres):
-    # 유저가 좋아요한 장르를 포함한 모든 장르 리스트
-    all_genres = user_liked_genres + movie_genres
-    
-    # 장르 정보를 벡터 형태로 변환
-    user_vector = [all_genres.count(genre) for genre in set(all_genres)]  # 사용자 장르 벡터
-    movie_vector = [1 if genre in movie_genres else 0 for genre in set(all_genres)]  # 영화 장르 벡터
-
-    # numpy 배열로 변환
-    user_array = np.array(user_vector).reshape(1, -1)  # 사용자 벡터를 행 벡터로 변환
-    movie_array = np.array(movie_vector).reshape(1, -1)  # 영화 벡터를 행 벡터로 변환
-
-    # 코사인 유사도 계산
-    similarity = cosine_similarity(user_array, movie_array)[0][0]
-
-    return similarity
-    
-# 모든 영화의 장르 정보 가져오기
-genres_dict = {
-    28: "Action",
-    12: "Adventure",
-    16: "Animation",
-    35: "Comedy",
-    80: "Crime",
-    99: "Documentary",
-    18: "Drama",
-    10751: "Family",
-    14: "Fantasy",
-    36: "History",
-    27: "Horror",
-    10402: "Music",
-    9648: "Mystery",
-    10749: "Romance",
-    878: "Science Fiction",
-    10770: "TV Movie",
-    53: "Thriller",
-    10752: "War",
-    37: "Western"
-}
-
 
 # View for movie recommamdation service
 @api_view(['GET'])
-def movie_recommendations(request):
+def genre_recommendations(request):
    # 현재 로그인한 사용자의 정보 가져오기
     user = request.user
 
@@ -264,13 +215,50 @@ def movie_recommendations(request):
             movie = Movie.objects.get(title=title)
             recommended_movies.append(movie)
         # 영화 Serializer로 직렬화
-        # serializer = MovieDetailSerializer(recommended_movies, many=True)
         serializer = MovieSerializer(recommended_movies, many=True)
 
         # 결과 딕셔너리 구성
         response_data = {
             "user_liked_genres": user_liked_genres,
             "similarity_res": {movie[0]: movie[1] for movie in top_similar_movies},
+            "movie_recommendations": serializer.data
+        }
+
+        return Response(response_data)
+    else:
+        return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+# 인기도 + 평점 기반 추천
+@api_view(['GET'])
+def popul_vote_recommend(request):
+    user = request.user
+
+    if user.is_authenticated:
+        user_preference = {
+            'popularity_weight': float(request.GET.get('popularity_weight', 0.9)),
+            'vote_average_weight': float(request.GET.get('vote_average_weight', 0.1))
+        }
+
+        # 데이터베이스에서 모든 영화 가져오기
+        movies = Movie.objects.all()
+        scored_movies = []
+        print('popularity_weight','vote_average_weight')
+        for movie in movies:
+            score = personalized_score(movie, user_preference['popularity_weight'], user_preference['vote_average_weight'])
+            scored_movies.append((movie.title, score, movie))
+
+        scored_movies.sort(key=lambda x: x[1], reverse=True)
+        top_scored_movies = scored_movies[:10]
+
+        recommended_movies = [movie[2] for movie in top_scored_movies]
+        
+        # 영화 Serializer로 직렬화
+        serializer = MovieSerializer(recommended_movies, many=True)
+
+        # 결과 딕셔너리 구성
+        response_data = {
+            "user_preference": user_preference,
             "movie_recommendations": serializer.data
         }
 
