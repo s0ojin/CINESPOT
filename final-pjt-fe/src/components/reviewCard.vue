@@ -82,6 +82,9 @@ const reviewLikeMutation = useMutation({
     if (err.response.status === 403) {
       alert('자신의 리뷰에 좋아요를 누를 수 없어요!😜')
     }
+    if (err.response.status === 401) {
+      alert('로그인 후 좋아요 기능을 이용할 수 있어요!🧐')
+    }
   }
 })
 
