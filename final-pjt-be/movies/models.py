@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
 
 class Movie(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -28,7 +30,8 @@ class Review(models.Model): ## 우리의 게시글 커뮤니티
     updated_at = models.DateTimeField(auto_now=True)    # 수정일
     # rating = models.PositiveIntegerField()  # 별점 필드 추가 정수 단위 별점
     rating = models.DecimalField(max_digits=3, decimal_places=1)  # 0.5 단위로 별점
-    
+    # likestatus = models.ManyToManyField(get_user_model(), related_name='liked_reviews', blank=True)
+
     def __str__(self):
         return self.content
     # def __str__(self):
