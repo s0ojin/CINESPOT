@@ -30,7 +30,6 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ('id','title','release_date', 'production_countries', 'poster_path', 'is_liked')
-        # fields = '__all__'
     
     # 05.20/23:35 추가
     def get_is_liked(self, obj):

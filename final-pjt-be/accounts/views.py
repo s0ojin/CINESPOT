@@ -9,13 +9,12 @@ from django.contrib.auth import get_user_model
 # 사용자 정보 조회 함수
 User = get_user_model()
 @api_view(['GET'])
-def user_info(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
+def user_info(request):
+    user = request.user
+    if user:
         serializer = UserInfoSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

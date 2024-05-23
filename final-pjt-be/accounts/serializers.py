@@ -14,8 +14,8 @@ class UserInfoSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id','username','userprofile']
     
-    def get_user(self, obj):
-        return obj.user.username
+    # def get_user(self, obj):
+    #     return obj.user.username
     
     def get_userprofile(self, obj):
         if hasattr(obj, 'profile') and obj.profile.image:
