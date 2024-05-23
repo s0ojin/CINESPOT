@@ -32,3 +32,7 @@ export const postSignIn = ({ username, password }) => {
 export const getUserInfo = () => {
   return privateApi.get(`/accounts/user_info/`)
 }
+
+export const getMypageInfo = () => {
+  return privateApi.get(`/accounts/my_page/`)
+}

@@ -14,7 +14,9 @@
           <RouterLink v-if="!isLoggedIn && route.name !== 'signin' && route.name !== 'signup'" to="/signin"
             >로그인</RouterLink
           >
-          <RouterLink v-if="route.name !== 'signin' && route.name !== 'signup'" to="/mypage">마이페이지</RouterLink>
+          <RouterLink v-if="route.name !== 'signin' && route.name !== 'signup' && route.name !== 'mypage'" to="/mypage"
+            >마이페이지</RouterLink
+          >
         </div>
       </div>
     </nav>
