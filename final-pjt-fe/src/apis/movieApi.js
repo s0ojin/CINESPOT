@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { privateApi, publicApi } from './authApi'
+import { privateApi } from './authApi'
 
 const movieApi = axios.create({
   baseURL: import.meta.env.VITE_TMDB_BASE_URL,
@@ -9,7 +9,7 @@ const movieApi = axios.create({
 })
 
 export const getMovies = () => {
-  return publicApi.get('/api/v1/movies/')
+  return privateApi.get('/api/v1/movies/')
 }
 
 export const getMovieDetails = (movieId) => {
@@ -22,4 +22,8 @@ export const getSimilarMovies = (movieId) => {
       language: 'ko-KR'
     }
   })
+}
+
+export const postMovieLike = (movieId) => {
+  return privateApi.post(`/api/v1/movies/${movieId}/like/`)
 }
