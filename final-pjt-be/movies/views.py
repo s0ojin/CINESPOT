@@ -24,8 +24,8 @@ def movie_review_list(request, movie_pk):
 def movie_list(request):
     movies = Movie.objects.all()
     # 원본 코드
-    serializer = MovieSerializer(movies, many=True)
-    # serializer = MovieSerializer(movies, many=True, context={'request': request})
+    # serializer = MovieSerializer(movies, many=True)
+    serializer = MovieSerializer(movies, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 # 영화 상세 내역 조회 원본 코드
