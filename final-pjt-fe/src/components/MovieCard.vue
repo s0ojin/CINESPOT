@@ -17,7 +17,14 @@
       ></i>
 
       <img
+        v-if="movie.poster_path"
         :src="`https://image.tmdb.org/t/p/w500${movie.poster_path}`"
+        alt="Poster"
+        class="h-[360px] w-full object-cover"
+      />
+      <img
+        v-if="movie.poster_path === null"
+        src="@/assets/images/posterdefault.png"
         alt="Poster"
         class="h-[360px] w-full object-cover"
       />

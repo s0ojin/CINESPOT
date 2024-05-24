@@ -14,9 +14,9 @@
           <RouterLink v-if="!isLoggedIn && route.name !== 'signin' && route.name !== 'signup'" to="/signin"
             >로그인</RouterLink
           >
-          <RouterLink v-if="route.name !== 'signin' && route.name !== 'signup' && route.name !== 'mypage'" to="/mypage"
-            >마이페이지</RouterLink
-          >
+          <button @click="handleLogout" v-if="isLoggedIn && route.name !== 'signin' && route.name !== 'signup'">
+            로그아웃
+          </button>
         </div>
       </div>
     </nav>
@@ -65,6 +65,8 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useAuthQuery } from './composables/useAuthQuery'
+import { useQueryClient } from '@tanstack/vue-query'
+import { getUserInfo } from './apis/authApi'
 
 const { data: authData } = useAuthQuery()
 const isLoggedIn = computed(() => !!authData?.value)
@@ -76,9 +78,23 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 0
 }
 
+const queryClient = useQueryClient()
+
 const containerClass = computed(() => {
   return route.meta.noContainer ? '' : 'max-w-screen-xl mx-auto py-20 h-auto min-h-[calc(100vh-288px)]'
 })
+
+const handleLogout = async () => {
+  localStorage.clear()
+  alert('로그아웃되었습니다.')
+  try {
+    const userInfoResponse = await getUserInfo()
+    const userInfo = userInfoResponse.data
+    queryClient.setQueryData(['auth'], null)
+  } catch (err) {
+    console.error('로그아웃실패')
+  }
+}
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)

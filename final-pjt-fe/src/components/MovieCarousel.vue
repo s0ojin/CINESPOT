@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import MovieCard from '@/components/home/MovieCard.vue'
+import MovieCard from '@/components/MovieCard.vue'
 
 const props = defineProps({
   movies: {
