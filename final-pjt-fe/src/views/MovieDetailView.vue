@@ -78,12 +78,15 @@
         </section>
         <section>
           <h2 class="text-2xl font-bold p-2">AI가 < {{ detailInfo.title }} > 하면 생각나는 여행지를 추천해드립니다!</h2>
-          <TravelCard
-            destination="로스앤젤레스, 캘리포니아, 미국"
-            reason="아이언맨 3의 많은 장면들이 로스앤젤레스에서 촬영되었습니다. 할리우드 영화의 중심지인 로스앤젤레스는 영화 속에서 토니 스타크의 집과 다양한 액션 장면들이 펼쳐진 곳입니다."
-            address="Hollywood, Los Angeles, CA, USA"
-            image_url="https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcSp0ebixxMGjMybL9AqViasYbUdjPL4Lb8tqFQph5xvGwTWeEkQRUO084-eKVOMIiPHnh58XJ8Sj4fWCdv5RnYq47t72MrZAHPYLbxfyQ"
-          />
+          <div v-if="travelLoading" class="flex flex-col justify-center items-center text-xl mt-6">
+            <i class="pi pi-spin pi-cog text-3xl text-primary-500"></i>
+            🏃🏻‍♀️CINESPOT AI가 열심히 여행지를 찾아오고 있어요..!!!!!!!🏃🏻
+          </div>
+          <div v-if="!travelLoading && !travelError && travels" class="flex gap-6">
+            <div v-for="(travel, idx) in travels" :key="idx" class="flex-grow-0">
+              <TravelCard :travel="travel" />
+            </div>
+          </div>
         </section>
         <section>
           <h2 class="text-2xl font-bold p-2">< {{ detailInfo.title }} >과 비슷한 영화들 추천드려요!</h2>
@@ -108,6 +111,8 @@ import reviewCard from '@/components/reviewCard.vue'
 import MovieCarousel from '@/components/MovieCarousel.vue'
 import CreateReview from '@/components/CreateReview.vue'
 import TravelCard from '@/components/TravelCard.vue'
+import { getRecommendedTravelDestination } from '@/apis/travelApi'
+import { computed } from 'vue'
 
 const route = useRoute()
 const movieId = route.params.movieId
@@ -128,5 +133,22 @@ const {
 } = useQuery({
   queryKey: ['similarMovies'],
   queryFn: () => getSimilarMovies(movieId).then((res) => res.data.results)
+})
+
+const movieInfoForTravel = computed(() => detailInfo.value)
+const enabled = computed(() => !!detailInfo)
+
+const {
+  data: travels,
+  error: travelError,
+  isLoading: travelLoading
+} = useQuery({
+  queryKey: ['travelDestinations', movieInfoForTravel],
+  queryFn: () =>
+    getRecommendedTravelDestination({
+      title: movieInfoForTravel.value.title,
+      year: movieInfoForTravel.value.release_date.split('-')[0]
+    }).then((res) => res.data.recommended_destinations),
+  enabled: enabled.value
 })
 </script>

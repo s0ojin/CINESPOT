@@ -3,7 +3,11 @@
     <div class="h-60 rounded-lg p-6 border hover:scale-105 transition duration-150 flex flex-col">
       <div class="flex justify-between items-center">
         <h3 class="font-bold flex items-center gap-2">
-          <img :src="review.userprofile" alt="Profile Image" class="w-6 h-6 rounded-full" />{{ review.user }}
+          <img
+            src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+            alt="Profile Image"
+            class="w-6 h-6 rounded-full"
+          />{{ review.user }}
         </h3>
         <div class="flex items-center">
           <span class="mr-2">{{ review.rating }}</span>

@@ -4,7 +4,11 @@
     <div v-if="error">Error loading review: {{ error.message }}</div>
     <div v-if="!isLoading && !error && review">
       <div class="flex items-center relative">
-        <img :src="review.authorInfo.authorProfile" alt="Author Avatar" class="h-10 w-10 rounded-full mr-2" />
+        <img
+          src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+          alt="Author Avatar"
+          class="h-10 w-10 rounded-full mr-2"
+        />
         <div>
           <p class="font-semibold">{{ review.authorInfo.author }}</p>
           <p class="text-sm text-slate-600">{{ getConvertedTime(review.created_at) }}</p>
