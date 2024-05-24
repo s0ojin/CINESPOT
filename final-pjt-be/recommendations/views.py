@@ -23,7 +23,6 @@ def generate_recommendations(movie_title, release_year):
         "release_year": release_year,
         "recommended_destinations": recommended_destinations,
     }
-
     for i in range(2):
         first_prompt = f"영화 '{movie_title}'(출시 연도: {release_year})의 여행지 추천. 목적지 이름 정확히 하나만 알려줘"
         if i > 0:
@@ -36,7 +35,6 @@ def generate_recommendations(movie_title, release_year):
             ]
         )
         destination = response.to_dict()['choices'][0]['message']['content']
-        
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -46,8 +44,6 @@ def generate_recommendations(movie_title, release_year):
             ]
         )
         reason = response.to_dict()['choices'][0]['message']['content']
-        
-
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -57,19 +53,14 @@ def generate_recommendations(movie_title, release_year):
             ]
         )
         address = response.to_dict()['choices'][0]['message']['content']
-        
-
         image = get_top_image_url(destination+" 풍경")
-
         recommended_destinations.append({
             "destination": destination,
             "reason": reason,
             "address": address,
             "image_url": image
         })
-
     return recommendations
-
 
 def get_top_image_url(search_term):
     google_image_search_api_key = settings.GOOGLE_API_KEY
@@ -77,7 +68,6 @@ def get_top_image_url(search_term):
     cse_id = google_cse_id
     api_key = google_image_search_api_key
 
-    # 검색 쿼리 및 파라미터 설정
     service_url = 'https://www.googleapis.com/customsearch/v1'
     params = {
         'q': search_term,
