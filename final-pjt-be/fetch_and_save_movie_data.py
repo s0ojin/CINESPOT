@@ -97,7 +97,7 @@ if __name__ == "__main__":
     movies_data = []
     movie_id = 1
 
-    while len(movies_data) < 20:
+    while len(movies_data) < 200:
         movie_data = fetch_movie_data(movie_id, genre_dict)
         if movie_data:
             movie = save_movie_data_to_db(movie_data)
