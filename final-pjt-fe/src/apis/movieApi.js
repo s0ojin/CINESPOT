@@ -1,21 +1,37 @@
 import axios from 'axios'
+import { privateApi } from './authApi'
 
-const movieApit = axios.create({
+const movieApi = axios.create({
   baseURL: import.meta.env.VITE_TMDB_BASE_URL,
   params: {
     api_key: import.meta.env.VITE_TMDB_API_KEY
   }
 })
 
-export const getPopularMovies = () => {
-  return movieApit.get('/movie/popular', {
+export const getMovies = () => {
+  return privateApi.get('/api/v1/movies/')
+}
+
+export const getMovieDetails = (movieId) => {
+  return privateApi.get(`/api/v1/movies/${movieId}`)
+}
+
+export const getSimilarMovies = (movieId) => {
+  return movieApi.get(`https://api.themoviedb.org/3/movie/${movieId}/similar`, {
     params: {
-      language: 'ko-KR',
-      page: 1
+      language: 'ko-KR'
     }
   })
 }
 
-export const getMovieDetails = (movieId) => {
-  return movieApit.get(`/movie/${movieId}`)
+export const postMovieLike = (movieId) => {
+  return privateApi.post(`/api/v1/movies/${movieId}/like/`)
+}
+
+export const getRecommendMovies = () => {
+  return privateApi.get(`api/v1/genres_recommend/`)
+}
+
+export const getPopularMovies = () => {
+  return privateApi.get(`api/v1/popul_vote_recommend/`)
 }
